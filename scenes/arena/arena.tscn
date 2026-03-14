@@ -1,0 +1,476 @@
+[gd_scene load_steps=11 format=3 uid="uid://b5xvk7eb1ig6y"]
+
+[ext_resource type="PackedScene" uid="uid://dslvefkuei8rb" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://c8xi1kt2ogno0" path="res://scenes/arena/arena_manager.gd" id="2_manager"]
+[ext_resource type="Script" uid="uid://d3fpcin1kcenj" path="res://scenes/arena/weapon_spawner.gd" id="3_spawner"]
+[ext_resource type="Script" uid="uid://duy1thgw4wxo4" path="res://scenes/arena/arena_camera.gd" id="4_camera"]
+
+[sub_resource type="RectangleShape2D" id="SubResource_ground"]
+size = Vector2(3400, 40)
+
+[sub_resource type="RectangleShape2D" id="SubResource_wall"]
+size = Vector2(20, 1644.5)
+
+[sub_resource type="RectangleShape2D" id="SubResource_plat250"]
+size = Vector2(260, 16)
+
+[sub_resource type="RectangleShape2D" id="SubResource_plat200"]
+size = Vector2(220, 16)
+
+[sub_resource type="RectangleShape2D" id="SubResource_plat300"]
+size = Vector2(340, 16)
+
+[sub_resource type="RectangleShape2D" id="SubResource_plat160"]
+size = Vector2(180, 16)
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("2_manager")
+
+[node name="Camera" type="Camera2D" parent="."]
+position = Vector2(1700, 560)
+zoom = Vector2(1.7, 1.7)
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+script = ExtResource("4_camera")
+
+[node name="Ceil" type="StaticBody2D" parent="."]
+position = Vector2(1700, -274)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="Ceil"]
+shape = SubResource("SubResource_ground")
+
+[node name="Visual" type="ColorRect" parent="Ceil"]
+offset_left = -1700.0
+offset_top = -20.0
+offset_right = 1700.0
+offset_bottom = 20.0
+color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(1700, 980)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("SubResource_ground")
+
+[node name="Visual" type="ColorRect" parent="Ground"]
+offset_left = -1700.0
+offset_top = -20.0
+offset_right = 1700.0
+offset_bottom = 20.0
+color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(-10, 560)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="WallLeft"]
+position = Vector2(0, -161.5)
+shape = SubResource("SubResource_wall")
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(3410, 560)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="WallRight"]
+position = Vector2(0, -40.75)
+shape = SubResource("SubResource_wall")
+
+[node name="PlatformFarLeftLow" type="StaticBody2D" parent="."]
+position = Vector2(320, 870)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformFarLeftLow"]
+shape = SubResource("SubResource_plat250")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformFarLeftLow"]
+offset_left = -130.0
+offset_top = -8.0
+offset_right = 130.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformFarLeftMid" type="StaticBody2D" parent="."]
+position = Vector2(480, 690)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformFarLeftMid"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformFarLeftMid"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformFarLeftHigh" type="StaticBody2D" parent="."]
+position = Vector2(300, 520)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformFarLeftHigh"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformFarLeftHigh"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformLowerLeft" type="StaticBody2D" parent="."]
+position = Vector2(760, 860)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformLowerLeft"]
+shape = SubResource("SubResource_plat250")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformLowerLeft"]
+offset_left = -130.0
+offset_top = -8.0
+offset_right = 130.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformLowerMidLeft" type="StaticBody2D" parent="."]
+position = Vector2(1180, 760)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformLowerMidLeft"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformLowerMidLeft"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformCenter" type="StaticBody2D" parent="."]
+position = Vector2(1700, 700)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformCenter"]
+shape = SubResource("SubResource_plat300")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformCenter"]
+offset_left = -170.0
+offset_top = -8.0
+offset_right = 170.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformLowerMidRight" type="StaticBody2D" parent="."]
+position = Vector2(2220, 760)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformLowerMidRight"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformLowerMidRight"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformLowerRight" type="StaticBody2D" parent="."]
+position = Vector2(2640, 860)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformLowerRight"]
+shape = SubResource("SubResource_plat250")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformLowerRight"]
+offset_left = -130.0
+offset_top = -8.0
+offset_right = 130.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformFarRightLow" type="StaticBody2D" parent="."]
+position = Vector2(3080, 870)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformFarRightLow"]
+shape = SubResource("SubResource_plat250")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformFarRightLow"]
+offset_left = -130.0
+offset_top = -8.0
+offset_right = 130.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformFarRightMid" type="StaticBody2D" parent="."]
+position = Vector2(2920, 690)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformFarRightMid"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformFarRightMid"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformFarRightHigh" type="StaticBody2D" parent="."]
+position = Vector2(3100, 520)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformFarRightHigh"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformFarRightHigh"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformMidLeft" type="StaticBody2D" parent="."]
+position = Vector2(1080, 600)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformMidLeft"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformMidLeft"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformBridgeLeft" type="StaticBody2D" parent="."]
+position = Vector2(1440, 540)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformBridgeLeft"]
+shape = SubResource("SubResource_plat160")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformBridgeLeft"]
+offset_left = -90.0
+offset_top = -8.0
+offset_right = 90.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformBridgeRight" type="StaticBody2D" parent="."]
+position = Vector2(1960, 540)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformBridgeRight"]
+shape = SubResource("SubResource_plat160")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformBridgeRight"]
+offset_left = -90.0
+offset_top = -8.0
+offset_right = 90.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformMidRight" type="StaticBody2D" parent="."]
+position = Vector2(2320, 600)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformMidRight"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformMidRight"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformUpperLeft" type="StaticBody2D" parent="."]
+position = Vector2(860, 430)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformUpperLeft"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformUpperLeft"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformUpperCenter" type="StaticBody2D" parent="."]
+position = Vector2(1700, 360)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformUpperCenter"]
+shape = SubResource("SubResource_plat300")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformUpperCenter"]
+offset_left = -170.0
+offset_top = -8.0
+offset_right = 170.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformUpperRight" type="StaticBody2D" parent="."]
+position = Vector2(2540, 430)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformUpperRight"]
+shape = SubResource("SubResource_plat200")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformUpperRight"]
+offset_left = -110.0
+offset_top = -8.0
+offset_right = 110.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformSkyLeft" type="StaticBody2D" parent="."]
+position = Vector2(1460, 250)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformSkyLeft"]
+shape = SubResource("SubResource_plat160")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformSkyLeft"]
+offset_left = -90.0
+offset_top = -8.0
+offset_right = 90.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="PlatformSkyRight" type="StaticBody2D" parent="."]
+position = Vector2(1940, 250)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="PlatformSkyRight"]
+shape = SubResource("SubResource_plat160")
+one_way_collision = true
+
+[node name="Visual" type="ColorRect" parent="PlatformSkyRight"]
+offset_left = -90.0
+offset_top = -8.0
+offset_right = 90.0
+offset_bottom = 8.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="Player1" parent="." instance=ExtResource("1_player")]
+position = Vector2(940, 960)
+
+[node name="Player2" parent="." instance=ExtResource("1_player")]
+position = Vector2(2460, 960)
+player_id = 2
+player_color = Color(1, 0.3, 0.2, 1)
+character = 1
+
+[node name="WeaponSpawner" type="Node2D" parent="."]
+script = ExtResource("3_spawner")
+
+[node name="Spawn1" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(320, 858)
+
+[node name="Spawn2" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(480, 678)
+
+[node name="Spawn3" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(300, 508)
+
+[node name="Spawn4" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(760, 848)
+
+[node name="Spawn5" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1180, 748)
+
+[node name="Spawn6" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1700, 688)
+
+[node name="Spawn7" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(2220, 748)
+
+[node name="Spawn8" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(2640, 848)
+
+[node name="Spawn9" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(3080, 858)
+
+[node name="Spawn10" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(2920, 678)
+
+[node name="Spawn11" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(3100, 508)
+
+[node name="Spawn12" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1080, 588)
+
+[node name="Spawn13" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1440, 528)
+
+[node name="Spawn14" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1960, 528)
+
+[node name="Spawn15" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(2320, 588)
+
+[node name="Spawn16" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(860, 418)
+
+[node name="Spawn17" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1700, 348)
+
+[node name="Spawn18" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(2540, 418)
+
+[node name="Spawn19" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1460, 238)
+
+[node name="Spawn20" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1940, 238)
+
+[node name="Spawn21" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1610, 968)
+
+[node name="Spawn22" type="Marker2D" parent="WeaponSpawner"]
+position = Vector2(1790, 968)

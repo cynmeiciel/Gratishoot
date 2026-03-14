@@ -1,0 +1,40 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Gratishoot"
+run/main_scene="res://scenes/menu/main_menu.tscn"
+config/features=PackedStringArray("4.5", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameState="*res://scripts/autoload/game_state.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[layer_names]
+
+2d_physics/layer_1="World"
+2d_physics/layer_2="OneWayPlatform"
+2d_physics/layer_3="Player"
+2d_physics/layer_4="WeaponPickup"
+
+[physics]
+
+2d/default_gravity=1400.0
+
+[rendering]
+
+environment/defaults/default_clear_color=Color(0.15, 0.18, 0.25, 1)

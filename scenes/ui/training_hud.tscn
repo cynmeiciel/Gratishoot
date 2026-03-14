@@ -1,0 +1,408 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/training_hud.gd" id="1_training_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel_main"]
+bg_color = Color(0.06, 0.09, 0.14, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.42, 0.64, 0.95)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel_accent_left"]
+bg_color = Color(0.05, 0.1, 0.16, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.26, 0.74, 1, 0.95)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel_accent_right"]
+bg_color = Color(0.1, 0.06, 0.08, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.45, 0.35, 0.95)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_footer"]
+bg_color = Color(0.02, 0.03, 0.05, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33, 0.39, 0.5, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_header"]
+bg_color = Color(0.06, 0.08, 0.12, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.45, 0.6, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_select_group"]
+bg_color = Color(1, 1, 1, 0.04)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="TrainingHUD" type="CanvasLayer"]
+
+[node name="Overlay" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_training_hud")
+
+[node name="Backdrop" type="ColorRect" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.04, 0.35)
+
+[node name="TopBar" type="PanelContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.2
+anchor_right = 0.8
+offset_top = 14.0
+offset_bottom = 96.0
+theme_override_styles/panel = SubResource("StyleBox_header")
+
+[node name="ToggleHudButton" type="Button" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -176.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = 44.0
+grow_horizontal = 0
+text = "Hide HUD (F1)"
+
+[node name="TopMargin" type="MarginContainer" parent="Overlay/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="TopVBox" type="VBoxContainer" parent="Overlay/TopBar/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="Overlay/TopBar/TopMargin/TopVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "TRAINING LOADOUT LAB"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Overlay/TopBar/TopMargin/TopVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Equip any gun/melee instantly for P1 and P2, then test in live combat."
+horizontal_alignment = 1
+
+[node name="Root" type="MarginContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 110
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Stack" type="VBoxContainer" parent="Overlay/Root"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="MainRow" type="HBoxContainer" parent="Overlay/Root/Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="P1Panel" type="PanelContainer" parent="Overlay/Root/Stack/MainRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBox_panel_accent_left")
+
+[node name="P1Margin" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P1Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="P1VBox" type="VBoxContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="P1Title" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "PLAYER 1"
+
+[node name="P1GunGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P1GunPad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P1GunRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P1GunLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Gun"
+
+[node name="P1GunOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1EquipGun" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow"]
+layout_mode = 2
+text = "Equip"
+
+[node name="P1ClearGun" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow"]
+layout_mode = 2
+text = "Clear"
+
+[node name="P1MeleeGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P1MeleePad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P1MeleeRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P1MeleeLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Melee"
+
+[node name="P1MeleeOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1EquipMelee" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow"]
+layout_mode = 2
+text = "Equip"
+
+[node name="P1ClearMelee" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow"]
+layout_mode = 2
+text = "Clear"
+
+[node name="P1Current" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Current: Unarmed | Bare Fists"
+
+[node name="P1Preview" type="RichTextLabel" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "Select a weapon to view stats."
+
+[node name="P2Panel" type="PanelContainer" parent="Overlay/Root/Stack/MainRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBox_panel_accent_right")
+
+[node name="P2Margin" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P2Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="P2VBox" type="VBoxContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="P2Title" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "PLAYER 2"
+
+[node name="P2GunGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P2GunPad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P2GunRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P2GunLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Gun"
+
+[node name="P2GunOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2EquipGun" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow"]
+layout_mode = 2
+text = "Equip"
+
+[node name="P2ClearGun" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow"]
+layout_mode = 2
+text = "Clear"
+
+[node name="P2MeleeGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P2MeleePad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P2MeleeRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P2MeleeLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Melee"
+
+[node name="P2MeleeOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2EquipMelee" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow"]
+layout_mode = 2
+text = "Equip"
+
+[node name="P2ClearMelee" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow"]
+layout_mode = 2
+text = "Clear"
+
+[node name="P2Current" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Current: Unarmed | Bare Fists"
+
+[node name="P2Preview" type="RichTextLabel" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "Select a weapon to view stats."
+
+[node name="Footer" type="PanelContainer" parent="Overlay/Root/Stack"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_footer")
+
+[node name="FooterMargin" type="MarginContainer" parent="Overlay/Root/Stack/Footer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="BottomBar" type="HBoxContainer" parent="Overlay/Root/Stack/Footer/FooterMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RefillAmmo" type="Button" parent="Overlay/Root/Stack/Footer/FooterMargin/BottomBar"]
+layout_mode = 2
+text = "Refill Ammo"
+
+[node name="ResetPositions" type="Button" parent="Overlay/Root/Stack/Footer/FooterMargin/BottomBar"]
+layout_mode = 2
+text = "Reset Positions"
+
+[node name="BackToMenu" type="Button" parent="Overlay/Root/Stack/Footer/FooterMargin/BottomBar"]
+layout_mode = 2
+text = "Back To Menu"
+
+[node name="Spacer" type="Control" parent="Overlay/Root/Stack/Footer/FooterMargin/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Hint" type="Label" parent="Overlay/Root/Stack/Footer/FooterMargin/BottomBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Tip: F1 toggles HUD | Esc returns to menu"
+
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow/P1EquipGun" to="Overlay" method="_on_p1_equip_gun_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow/P1ClearGun" to="Overlay" method="_on_p1_clear_gun_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow/P1EquipMelee" to="Overlay" method="_on_p1_equip_melee_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow/P1ClearMelee" to="Overlay" method="_on_p1_clear_melee_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow/P2EquipGun" to="Overlay" method="_on_p2_equip_gun_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow/P2ClearGun" to="Overlay" method="_on_p2_clear_gun_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow/P2EquipMelee" to="Overlay" method="_on_p2_equip_melee_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow/P2ClearMelee" to="Overlay" method="_on_p2_clear_melee_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/Footer/FooterMargin/BottomBar/RefillAmmo" to="Overlay" method="_on_refill_ammo_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/Footer/FooterMargin/BottomBar/ResetPositions" to="Overlay" method="_on_reset_positions_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/Footer/FooterMargin/BottomBar/BackToMenu" to="Overlay" method="_on_back_to_menu_pressed"]
+[connection signal="pressed" from="Overlay/ToggleHudButton" to="Overlay" method="_on_toggle_hud_button_pressed"]
+[connection signal="item_selected" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow/P1GunOption" to="Overlay" method="_on_p1_gun_option_item_selected"]
+[connection signal="item_selected" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow/P1MeleeOption" to="Overlay" method="_on_p1_melee_option_item_selected"]
+[connection signal="item_selected" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow/P2GunOption" to="Overlay" method="_on_p2_gun_option_item_selected"]
+[connection signal="item_selected" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow/P2MeleeOption" to="Overlay" method="_on_p2_melee_option_item_selected"]

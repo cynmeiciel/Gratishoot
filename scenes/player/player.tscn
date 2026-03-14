@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3 uid="uid://dslvefkuei8rb"]
+
+[ext_resource type="Script" uid="uid://b0wshynrgkwa2" path="res://scenes/player/player.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dejp2kiijli33" path="res://scenes/player/player_visuals.gd" id="2_visuals"]
+
+[sub_resource type="RectangleShape2D" id="SubResource_standing"]
+size = Vector2(26, 52)
+
+[sub_resource type="RectangleShape2D" id="SubResource_crouching"]
+size = Vector2(26, 26)
+
+[sub_resource type="RectangleShape2D" id="SubResource_hitbox"]
+size = Vector2(30, 30)
+
+[sub_resource type="CircleShape2D" id="SubResource_pickup"]
+radius = 50.0
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_script")
+
+[node name="StandingCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0, -26)
+shape = SubResource("SubResource_standing")
+
+[node name="CrouchingCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0, -13)
+shape = SubResource("SubResource_crouching")
+disabled = true
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("SubResource_hitbox")
+disabled = true
+
+[node name="PickupArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="PickupShape" type="CollisionShape2D" parent="PickupArea"]
+position = Vector2(0, -26)
+shape = SubResource("SubResource_pickup")
+
+[node name="Visuals" type="Node2D" parent="."]
+scale = Vector2(0.82, 0.82)
+script = ExtResource("2_visuals")

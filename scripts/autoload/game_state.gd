@@ -1,0 +1,122 @@
+extends Node
+
+const SETTINGS_PATH := "user://settings.cfg"
+const WINDOW_WINDOWED := 0
+const WINDOW_FULLSCREEN := 1
+const MODE_VERSUS := 0
+const MODE_TRAINING := 1
+const DEFAULT_BINDINGS := {
+	"p1_left": KEY_A,
+	"p1_right": KEY_D,
+	"p1_jump": KEY_W,
+	"p1_crouch": KEY_S,
+	"p1_attack": KEY_G,
+	"p1_secondary": KEY_H,
+	"p1_sprint": KEY_J,
+	"p1_skill": KEY_T,
+	"p1_item": KEY_Y,
+	"p1_reload": KEY_U,
+	"p2_left": KEY_LEFT,
+	"p2_right": KEY_RIGHT,
+	"p2_jump": KEY_UP,
+	"p2_crouch": KEY_DOWN,
+	"p2_attack": KEY_KP_1,
+	"p2_secondary": KEY_KP_2,
+	"p2_sprint": KEY_KP_3,
+	"p2_skill": KEY_KP_4,
+	"p2_item": KEY_KP_5,
+	"p2_reload": KEY_KP_6
+}
+
+var rounds_to_win: int = 3
+var p1_character: int = 0
+var p2_character: int = 1
+var p1_color: Color = Color(0.2, 0.6, 1.0)
+var p2_color: Color = Color(1.0, 0.3, 0.2)
+var master_volume: float = 0.85
+var window_mode: int = WINDOW_WINDOWED
+var key_bindings: Dictionary = {}
+var game_mode: int = MODE_VERSUS
+var p2_is_ai: bool = false
+
+
+func _ready() -> void:
+	load_settings()
+	apply_runtime_settings()
+	if key_bindings.is_empty():
+		key_bindings = DEFAULT_BINDINGS.duplicate(true)
+	apply_key_bindings()
+
+
+func apply_runtime_settings() -> void:
+	var db := linear_to_db(clampf(master_volume, 0.0, 1.0))
+	AudioServer.set_bus_volume_db(0, db)
+	if window_mode == WINDOW_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func save_settings() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("match", "rounds_to_win", rounds_to_win)
+	cfg.set_value("players", "p1_character", p1_character)
+	cfg.set_value("players", "p2_character", p2_character)
+	cfg.set_value("players", "p2_is_ai", p2_is_ai)
+	cfg.set_value("players", "p1_color", p1_color.to_html())
+	cfg.set_value("players", "p2_color", p2_color.to_html())
+	cfg.set_value("settings", "master_volume", master_volume)
+	cfg.set_value("settings", "window_mode", window_mode)
+	for action in DEFAULT_BINDINGS.keys():
+		cfg.set_value("bindings", action, int(key_bindings.get(action, DEFAULT_BINDINGS[action])))
+	cfg.save(SETTINGS_PATH)
+
+
+func load_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) != OK:
+		return
+
+	rounds_to_win = int(cfg.get_value("match", "rounds_to_win", rounds_to_win))
+	p1_character = int(cfg.get_value("players", "p1_character", p1_character))
+	p2_character = int(cfg.get_value("players", "p2_character", p2_character))
+	p2_is_ai = bool(cfg.get_value("players", "p2_is_ai", p2_is_ai))
+	p1_color = Color(cfg.get_value("players", "p1_color", p1_color.to_html()))
+	p2_color = Color(cfg.get_value("players", "p2_color", p2_color.to_html()))
+	master_volume = float(cfg.get_value("settings", "master_volume", master_volume))
+	window_mode = int(cfg.get_value("settings", "window_mode", window_mode))
+
+	key_bindings.clear()
+	for action in DEFAULT_BINDINGS.keys():
+		key_bindings[action] = int(cfg.get_value("bindings", action, DEFAULT_BINDINGS[action]))
+
+	master_volume = clampf(master_volume, 0.0, 1.0)
+	rounds_to_win = maxi(1, mini(9, rounds_to_win))
+	p1_character = maxi(0, mini(1, p1_character))
+	p2_character = maxi(0, mini(1, p2_character))
+	window_mode = maxi(WINDOW_WINDOWED, mini(WINDOW_FULLSCREEN, window_mode))
+
+
+func apply_key_bindings() -> void:
+	for action in DEFAULT_BINDINGS.keys():
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
+		InputMap.action_erase_events(action)
+		var ev := InputEventKey.new()
+		ev.physical_keycode = int(key_bindings.get(action, DEFAULT_BINDINGS[action]))
+		InputMap.action_add_event(action, ev)
+
+
+func get_binding_key(action: String) -> int:
+	return int(key_bindings.get(action, DEFAULT_BINDINGS.get(action, KEY_NONE)))
+
+
+func set_binding_key(action: String, keycode: int) -> void:
+	if not DEFAULT_BINDINGS.has(action):
+		return
+	key_bindings[action] = keycode
+
+
+func reset_bindings_to_default() -> void:
+	key_bindings = DEFAULT_BINDINGS.duplicate(true)
+	apply_key_bindings()
