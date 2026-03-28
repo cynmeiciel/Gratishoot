@@ -104,6 +104,12 @@ custom_minimum_size = Vector2(240, 48)
 theme_override_font_sizes/font_size = 22
 text = "Settings"
 
+[node name="HelpButton" type="Button" parent="MainPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 48)
+theme_override_font_sizes/font_size = 22
+text = "Help"
+
 [node name="QuitButton" type="Button" parent="MainPanel"]
 layout_mode = 2
 custom_minimum_size = Vector2(240, 48)
@@ -157,6 +163,10 @@ text = "Window Mode"
 
 [node name="WindowModeOption" type="OptionButton" parent="SettingsPanel/Margin/VBox"]
 layout_mode = 2
+
+[node name="AimAssistCheckbox" type="CheckBox" parent="SettingsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Enable Aim Assist (Sniper/DMR)"
 
 [node name="KeybindLabel" type="Label" parent="SettingsPanel/Margin/VBox"]
 layout_mode = 2
@@ -224,6 +234,20 @@ theme_override_font_sizes/font_size = 34
 text = "Player Select"
 horizontal_alignment = 1
 
+[node name="GameModeRow" type="HBoxContainer" parent="PlayerSelectPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="GameModeLabel" type="Label" parent="PlayerSelectPanel/Margin/VBox/GameModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Game Mode"
+
+[node name="GameModeOption" type="OptionButton" parent="PlayerSelectPanel/Margin/VBox/GameModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="RoundsRow" type="HBoxContainer" parent="PlayerSelectPanel/Margin/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
@@ -251,6 +275,12 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
 text = "Player 1"
 
+[node name="P1NameInput" type="LineEdit" parent="PlayerSelectPanel/Margin/VBox/P1Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Player 1 Name"
+max_length = 16
+
 [node name="P1CharacterOption" type="OptionButton" parent="PlayerSelectPanel/Margin/VBox/P1Row"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -268,6 +298,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
 text = "Player 2"
+
+[node name="P2NameInput" type="LineEdit" parent="PlayerSelectPanel/Margin/VBox/P2Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Player 2 Name"
+max_length = 16
 
 [node name="P2CharacterOption" type="OptionButton" parent="PlayerSelectPanel/Margin/VBox/P2Row"]
 layout_mode = 2
@@ -308,13 +344,56 @@ custom_minimum_size = Vector2(160, 44)
 theme_override_font_sizes/font_size = 20
 text = "Back"
 
+[node name="HelpPanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.2
+anchor_top = 0.12
+anchor_right = 0.8
+anchor_bottom = 0.88
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="HelpPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="HelpPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HelpTitle" type="Label" parent="HelpPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Help"
+horizontal_alignment = 1
+
+[node name="HelpBody" type="RichTextLabel" parent="HelpPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 340)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[b]Core Controls[/b]\nAttack: fire / punch\nSecondary: aim gun\nReload: reload gun\nSprint: run faster (uses stamina)\nSkill: character ability\nItem: use tactical item\n\n[b]Throwables[/b]\nPress Item to enter throwable aim.\nAttack to throw. Reload toggles weak/strong throw.\nThrowables have charges.\n\n[b]Modes[/b]\nClassic Duel: standard arena rounds.\nArms Dealer: buy loadouts each round with credits.\nTraining: sandbox to practice movement and weapons.\n\n[b]Tips[/b]\n- Aim Assist only affects DMR/Sniper when enabled in Settings.\n- While crouching, aiming is disabled.\n- Press Esc in keybind remap to cancel."
+
+[node name="BackFromHelpButton" type="Button" parent="HelpPanel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 42)
+theme_override_font_sizes/font_size = 18
+text = "Back"
+
 [connection signal="pressed" from="TitlePanel/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="MainPanel/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="MainPanel/TrainingButton" to="." method="_on_training_button_pressed"]
 [connection signal="pressed" from="MainPanel/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="MainPanel/HelpButton" to="." method="_on_help_button_pressed"]
 [connection signal="pressed" from="MainPanel/QuitButton" to="." method="_on_quit_button_pressed"]
 [connection signal="pressed" from="SettingsPanel/Margin/VBox/SaveSettingsButton" to="." method="_on_save_settings_button_pressed"]
 [connection signal="pressed" from="SettingsPanel/Margin/VBox/ResetBindingsButton" to="." method="_on_reset_bindings_button_pressed"]
 [connection signal="pressed" from="SettingsPanel/Margin/VBox/BackFromSettingsButton" to="." method="_on_back_from_settings_button_pressed"]
 [connection signal="pressed" from="PlayerSelectPanel/Margin/VBox/ButtonRow/StartMatchButton" to="." method="_on_start_match_button_pressed"]
 [connection signal="pressed" from="PlayerSelectPanel/Margin/VBox/ButtonRow/BackFromSelectButton" to="." method="_on_back_from_select_button_pressed"]
+[connection signal="pressed" from="HelpPanel/Margin/VBox/BackFromHelpButton" to="." method="_on_back_from_help_button_pressed"]

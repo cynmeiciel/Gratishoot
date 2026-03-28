@@ -68,7 +68,7 @@ func _spawn_tactical(point: Marker2D) -> void:
 
 
 func _pick_weighted(pool: Array[WeaponData]) -> WeaponData:
-	# Weights: Common=30, Uncommon=25, Rare=18, Epic=12, Legendary=6, Mythic=2
+	# Weights: Common=30, Uncommon=25, Rare=18, Epic=12, Legendary=6, Mythic=2, Contraband=0.6
 	var weights := {
 		WeaponData.Rarity.COMMON: 30.0,
 		WeaponData.Rarity.UNCOMMON: 25.0,
@@ -76,6 +76,7 @@ func _pick_weighted(pool: Array[WeaponData]) -> WeaponData:
 		WeaponData.Rarity.EPIC: 12.0,
 		WeaponData.Rarity.LEGENDARY: 6.0,
 		WeaponData.Rarity.MYTHIC: 2.0,
+		WeaponData.Rarity.CONTRABAND: 0.6,
 	}
 	var total := 0.0
 	for w in pool:

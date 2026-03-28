@@ -3,8 +3,10 @@ extends Control
 const ARENA_SCENE := "res://scenes/arena/arena.tscn"
 
 const CHARACTER_NAMES := [
-	"Tsutaya (Dash)",
-	"Aichok (Lifesteal)"
+	"Instant Dash",
+	"Life Steal",
+	"Shrink",
+	"Invisible"
 ]
 
 const COLOR_PRESETS := [
@@ -45,14 +47,19 @@ const KEYBIND_ROWS := [
 @onready var main_panel: Control = $MainPanel
 @onready var settings_panel: Control = $SettingsPanel
 @onready var select_panel: Control = $PlayerSelectPanel
+@onready var help_panel: Control = $HelpPanel
 
 @onready var volume_slider: HSlider = $SettingsPanel/Margin/VBox/VolumeSlider
 @onready var window_mode_option: OptionButton = $SettingsPanel/Margin/VBox/WindowModeOption
+@onready var aim_assist_checkbox: CheckBox = $SettingsPanel/Margin/VBox/AimAssistCheckbox
 @onready var keybind_list: VBoxContainer = $SettingsPanel/Margin/VBox/KeybindScroll/KeybindList
 
 @onready var rounds_spinbox: SpinBox = $PlayerSelectPanel/Margin/VBox/RoundsRow/RoundsSpinBox
+@onready var game_mode_option: OptionButton = $PlayerSelectPanel/Margin/VBox/GameModeRow/GameModeOption
+@onready var p1_name_input: LineEdit = $PlayerSelectPanel/Margin/VBox/P1Row/P1NameInput
 @onready var p1_character_option: OptionButton = $PlayerSelectPanel/Margin/VBox/P1Row/P1CharacterOption
 @onready var p1_color_option: OptionButton = $PlayerSelectPanel/Margin/VBox/P1Row/P1ColorOption
+@onready var p2_name_input: LineEdit = $PlayerSelectPanel/Margin/VBox/P2Row/P2NameInput
 @onready var p2_character_option: OptionButton = $PlayerSelectPanel/Margin/VBox/P2Row/P2CharacterOption
 @onready var p2_color_option: OptionButton = $PlayerSelectPanel/Margin/VBox/P2Row/P2ColorOption
 @onready var p2_ai_checkbox: CheckBox = $PlayerSelectPanel/Margin/VBox/AIRow/P2AICheckbox
@@ -94,6 +101,9 @@ func _populate_selectors() -> void:
 		p1_color_option.add_item(COLOR_PRESETS[i]["name"], i)
 		p2_color_option.add_item(COLOR_PRESETS[i]["name"], i)
 
+	game_mode_option.add_item("Classic Duel", GameState.MODE_CLASSIC_DUEL)
+	game_mode_option.add_item("Arms Dealer", GameState.MODE_ARMS_DEALER)
+
 	window_mode_option.add_item("Windowed", GameState.WINDOW_WINDOWED)
 	window_mode_option.add_item("Fullscreen", GameState.WINDOW_FULLSCREEN)
 
@@ -102,9 +112,16 @@ func _sync_from_state() -> void:
 	rounds_spinbox.value = GameState.rounds_to_win
 	volume_slider.value = GameState.master_volume
 	window_mode_option.select(GameState.window_mode)
+	aim_assist_checkbox.button_pressed = GameState.aim_assist_enabled
+	var mode_id := GameState.game_mode
+	if mode_id != GameState.MODE_ARMS_DEALER:
+		mode_id = GameState.MODE_CLASSIC_DUEL
+	game_mode_option.select(mode_id)
 
 	p1_character_option.select(GameState.p1_character)
 	p2_character_option.select(GameState.p2_character)
+	p1_name_input.text = GameState.p1_name
+	p2_name_input.text = GameState.p2_name
 	p1_color_option.select(_find_color_index(GameState.p1_color))
 	p2_color_option.select(_find_color_index(GameState.p2_color))
 	p2_ai_checkbox.button_pressed = GameState.p2_is_ai
@@ -169,59 +186,95 @@ func _show_panel(panel: Control) -> void:
 	main_panel.visible = false
 	settings_panel.visible = false
 	select_panel.visible = false
+	help_panel.visible = false
 	panel.visible = true
 
 
+func _ui_click(back := false) -> void:
+	AudioManager.play_sfx_varied("ui_back" if back else "ui_click", -6.0, 0.98, 1.03)
+
+
 func _on_start_button_pressed() -> void:
+	_ui_click()
 	_show_panel(main_panel)
 
 
 func _on_play_button_pressed() -> void:
-	GameState.game_mode = GameState.MODE_VERSUS
+	_ui_click()
 	_show_panel(select_panel)
 
 
 func _on_training_button_pressed() -> void:
+	_ui_click()
 	GameState.game_mode = GameState.MODE_TRAINING
 	get_tree().change_scene_to_file(ARENA_SCENE)
 
 
 func _on_settings_button_pressed() -> void:
+	_ui_click()
 	_show_panel(settings_panel)
 
 
+func _on_help_button_pressed() -> void:
+	_ui_click()
+	_show_panel(help_panel)
+
+
 func _on_quit_button_pressed() -> void:
+	_ui_click(true)
 	get_tree().quit()
 
 
 func _on_back_from_settings_button_pressed() -> void:
+	_ui_click(true)
 	_show_panel(main_panel)
 
 
 func _on_save_settings_button_pressed() -> void:
+	_ui_click()
 	GameState.master_volume = volume_slider.value
 	GameState.window_mode = window_mode_option.get_selected_id()
+	GameState.aim_assist_enabled = aim_assist_checkbox.button_pressed
 	GameState.apply_runtime_settings()
 	GameState.save_settings()
 
 
 func _on_reset_bindings_button_pressed() -> void:
+	_ui_click()
 	_pending_bind_action = ""
 	GameState.reset_bindings_to_default()
 	_refresh_keybind_labels()
 
 
 func _on_back_from_select_button_pressed() -> void:
+	_ui_click(true)
+	_show_panel(main_panel)
+
+
+func _on_back_from_help_button_pressed() -> void:
+	_ui_click(true)
 	_show_panel(main_panel)
 
 
 func _on_start_match_button_pressed() -> void:
-	GameState.game_mode = GameState.MODE_VERSUS
+	_ui_click()
+	GameState.game_mode = game_mode_option.get_selected_id()
 	GameState.rounds_to_win = int(rounds_spinbox.value)
 	GameState.p1_character = p1_character_option.get_selected_id()
 	GameState.p2_character = p2_character_option.get_selected_id()
+	GameState.p1_name = _sanitize_player_name(p1_name_input.text, "Player 1")
+	GameState.p2_name = _sanitize_player_name(p2_name_input.text, "Player 2")
 	GameState.p2_is_ai = p2_ai_checkbox.button_pressed
 	GameState.p1_color = COLOR_PRESETS[p1_color_option.get_selected_id()]["color"]
 	GameState.p2_color = COLOR_PRESETS[p2_color_option.get_selected_id()]["color"]
 	GameState.save_settings()
 	get_tree().change_scene_to_file(ARENA_SCENE)
+
+
+func _sanitize_player_name(raw: String, fallback: String) -> String:
+	var cleaned := raw.strip_edges()
+	if cleaned == "":
+		return fallback
+	if cleaned.length() > 16:
+		cleaned = cleaned.substr(0, 16)
+	return cleaned

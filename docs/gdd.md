@@ -85,6 +85,7 @@ Weapons (melee and guns) spawn at random locations on the map at random interval
 | Epic       | purple              | Very High   |
 | Legendary  | gold                | Extreme     |
 | Mythic     | red                 | Maximum     |
+| Contraband | cyan                | Broken / Experimental |
 
 Every gun category is balanced so that all are viable options — no single type dominates.
 
@@ -182,7 +183,7 @@ Each character has a **unique active skill** with a cooldown (or limited charges
 ## 7. Open Questions / TBD
 
 - [x] Full weapon list and categories — see [weapons.md](weapons.md).
-- [ ] Per-weapon stat values (damage, fire rate, capacity, etc.).
+- [ ] Per-weapon stat values (damage, fire rate, spread, capacity, etc.).
 - [ ] Rarity distribution weights and visual indicators.
 - [ ] Complete character roster and skill details (cooldowns, costs, balance).
 - [ ] Stamina values (max, drain rate, regen rate).

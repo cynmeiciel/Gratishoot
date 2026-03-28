@@ -2,7 +2,7 @@ class_name WeaponData
 extends Resource
 
 enum Type { MELEE, GUN }
-enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC }
+enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC, CONTRABAND }
 enum GunCategory { NONE, PISTOL, ASSAULT_RIFLE, BATTLE_RIFLE, SMG, LMG, SHOTGUN, SNIPER, DMR }
 enum FireMode { SINGLE, BURST, AUTO }
 enum MeleeStyle { THRUST, SWEEP, HEAVY }
@@ -35,8 +35,10 @@ enum MeleeStyle { THRUST, SWEEP, HEAVY }
 
 # Gun stats
 @export var velocity: float = 800.0          # projectile speed (px/s)
+@export var spread: float = 2.0              # random shot angle in degrees (+/-)
 @export var recoil: float = 30.0             # backward push on player
 @export var recoil_kick: float = 0.05        # aim pitch rise per shot (radians)
+@export var sfx_event: String = ""          # AudioManager event key for this gun's firing sound
 @export var reload_time: float = 1.5
 @export var capacity: int = 12
 @export var reserve_ammo: int = 36
@@ -52,6 +54,7 @@ static var RARITY_COLORS: Dictionary = {
 	Rarity.EPIC: Color(0.6, 0.2, 0.9),
 	Rarity.LEGENDARY: Color(1.0, 0.84, 0.0),
 	Rarity.MYTHIC: Color(1.0, 0.15, 0.15),
+	Rarity.CONTRABAND: Color(0.12, 1.0, 0.92),
 }
 
 

@@ -1,0 +1,42 @@
+Place your SFX files here.
+
+Default AudioManager mapping expects these filenames:
+
+ui_click.ogg
+ui_back.ogg
+
+gun_pistol.ogg
+gun_rifle.ogg
+gun_shotgun.ogg
+gun_smg.ogg
+gun_sniper.ogg
+gun_lmg.ogg
+gun_dmr.ogg
+
+reload.ogg
+melee_swing.ogg
+melee_hit.ogg
+bullet_impact.ogg
+hurt.ogg
+death.ogg
+
+pickup_weapon.ogg
+pickup_tactical.ogg
+use_tactical.ogg
+use_medkit.ogg
+use_jetpack.ogg
+
+round_start.ogg
+round_win.ogg
+match_victory.ogg
+
+Per-gun sounds:
+- Each gun now has a unique `sfx` key in scripts/data/weapon_db.gd, e.g. `gun_ak_47`.
+- Preferred file location convention:
+	assets/audio/sfx/guns/<event_without_gun_prefix>.ogg
+	Example: event `gun_ak_47` -> `assets/audio/sfx/guns/ak_47.ogg`
+
+You can rename or remap events in scripts/autoload/audio_manager.gd:
+- DEFAULT_EVENT_PATHS dictionary
+- set_event_path(event_name, path)
+- register_bank({event_name: path, ...})

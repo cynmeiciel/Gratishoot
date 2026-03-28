@@ -35,5 +35,13 @@ func on_damage_dealt(_player: CharacterBody2D, _amount: float) -> void:
 	pass
 
 
+func on_owner_damaged(_player: CharacterBody2D, _amount: float) -> void:
+	pass
+
+
+func get_visual_alpha() -> float:
+	return 1.0
+
+
 func reset() -> void:
 	cooldown_timer = 0.0

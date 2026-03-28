@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://byajim53n8dun"]
 
-[ext_resource type="Script" path="res://scenes/weapon/weapon_pickup.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://chcwrldihkwve" path="res://scenes/weapon/weapon_pickup.gd" id="1_script"]
 
 [sub_resource type="RectangleShape2D" id="SubResource_shape"]
 size = Vector2(28, 20)
@@ -8,7 +8,6 @@ size = Vector2(28, 20)
 [node name="WeaponPickup" type="Area2D"]
 collision_layer = 8
 collision_mask = 0
-monitorable = true
 script = ExtResource("1_script")
 
 [node name="Shape" type="CollisionShape2D" parent="."]

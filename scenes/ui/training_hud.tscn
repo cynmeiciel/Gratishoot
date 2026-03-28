@@ -70,6 +70,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [node name="TrainingHUD" type="CanvasLayer"]
+layer = 20
 
 [node name="Overlay" type="Control" parent="."]
 layout_mode = 3
@@ -108,6 +109,8 @@ offset_top = 14.0
 offset_right = -14.0
 offset_bottom = 44.0
 grow_horizontal = 0
+z_as_relative = false
+z_index = 200
 text = "Hide HUD (F1)"
 
 [node name="TopMargin" type="MarginContainer" parent="Overlay/TopBar"]
@@ -242,10 +245,75 @@ text = "Equip"
 layout_mode = 2
 text = "Clear"
 
+[node name="P1TacGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P1TacPad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P1TacRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P1TacLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad/P1TacRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Tac"
+
+[node name="P1TacOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad/P1TacRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1EquipTac" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad/P1TacRow"]
+layout_mode = 2
+text = "Equip"
+
+[node name="P1ClearTac" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad/P1TacRow"]
+layout_mode = 2
+text = "Clear"
+
+[node name="P1SkillGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P1SkillPad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1SkillGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P1SkillRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1SkillGroup/P1SkillPad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P1SkillLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1SkillGroup/P1SkillPad/P1SkillRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Skill"
+
+[node name="P1SkillOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1SkillGroup/P1SkillPad/P1SkillRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1ApplySkill" type="Button" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1SkillGroup/P1SkillPad/P1SkillRow"]
+layout_mode = 2
+text = "Apply"
+
 [node name="P1Current" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Current: Unarmed | Bare Fists"
+
+[node name="P1Assist" type="Label" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Assist: standby"
 
 [node name="P1Preview" type="RichTextLabel" parent="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox"]
 layout_mode = 2
@@ -341,10 +409,75 @@ text = "Equip"
 layout_mode = 2
 text = "Clear"
 
+[node name="P2TacGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P2TacPad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P2TacRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P2TacLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad/P2TacRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Tac"
+
+[node name="P2TacOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad/P2TacRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2EquipTac" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad/P2TacRow"]
+layout_mode = 2
+text = "Equip"
+
+[node name="P2ClearTac" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad/P2TacRow"]
+layout_mode = 2
+text = "Clear"
+
+[node name="P2SkillGroup" type="PanelContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_select_group")
+
+[node name="P2SkillPad" type="MarginContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2SkillGroup"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="P2SkillRow" type="HBoxContainer" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2SkillGroup/P2SkillPad"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P2SkillLabel" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2SkillGroup/P2SkillPad/P2SkillRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(46, 0)
+text = "Skill"
+
+[node name="P2SkillOption" type="OptionButton" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2SkillGroup/P2SkillPad/P2SkillRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2ApplySkill" type="Button" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2SkillGroup/P2SkillPad/P2SkillRow"]
+layout_mode = 2
+text = "Apply"
+
 [node name="P2Current" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Current: Unarmed | Bare Fists"
+
+[node name="P2Assist" type="Label" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Assist: standby"
 
 [node name="P2Preview" type="RichTextLabel" parent="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox"]
 layout_mode = 2
@@ -394,10 +527,16 @@ text = "Tip: F1 toggles HUD | Esc returns to menu"
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1GunGroup/P1GunPad/P1GunRow/P1ClearGun" to="Overlay" method="_on_p1_clear_gun_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow/P1EquipMelee" to="Overlay" method="_on_p1_equip_melee_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1MeleeGroup/P1MeleePad/P1MeleeRow/P1ClearMelee" to="Overlay" method="_on_p1_clear_melee_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad/P1TacRow/P1EquipTac" to="Overlay" method="_on_p1_equip_tac_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1TacGroup/P1TacPad/P1TacRow/P1ClearTac" to="Overlay" method="_on_p1_clear_tac_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P1Panel/P1Margin/P1VBox/P1SkillGroup/P1SkillPad/P1SkillRow/P1ApplySkill" to="Overlay" method="_on_p1_apply_skill_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow/P2EquipGun" to="Overlay" method="_on_p2_equip_gun_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2GunGroup/P2GunPad/P2GunRow/P2ClearGun" to="Overlay" method="_on_p2_clear_gun_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow/P2EquipMelee" to="Overlay" method="_on_p2_equip_melee_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2MeleeGroup/P2MeleePad/P2MeleeRow/P2ClearMelee" to="Overlay" method="_on_p2_clear_melee_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad/P2TacRow/P2EquipTac" to="Overlay" method="_on_p2_equip_tac_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2TacGroup/P2TacPad/P2TacRow/P2ClearTac" to="Overlay" method="_on_p2_clear_tac_pressed"]
+[connection signal="pressed" from="Overlay/Root/Stack/MainRow/P2Panel/P2Margin/P2VBox/P2SkillGroup/P2SkillPad/P2SkillRow/P2ApplySkill" to="Overlay" method="_on_p2_apply_skill_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/Footer/FooterMargin/BottomBar/RefillAmmo" to="Overlay" method="_on_refill_ammo_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/Footer/FooterMargin/BottomBar/ResetPositions" to="Overlay" method="_on_reset_positions_pressed"]
 [connection signal="pressed" from="Overlay/Root/Stack/Footer/FooterMargin/BottomBar/BackToMenu" to="Overlay" method="_on_back_to_menu_pressed"]

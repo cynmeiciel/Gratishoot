@@ -1,6 +1,13 @@
 extends CharacterBody2D
 
-enum Character { TSUTAYA, AICHOK }
+enum Character { TSUTAYA, AICHOK, SHRINK, INVISIBLE }
+
+const SKILL_NAMES := {
+	Character.TSUTAYA: "Dash",
+	Character.AICHOK: "Life Steal",
+	Character.SHRINK: "Shrink",
+	Character.INVISIBLE: "Invisible",
+}
 
 @export var player_id: int = 1
 @export var player_color: Color = Color(0.2, 0.6, 1.0)
@@ -63,12 +70,25 @@ var _burst_timer := 0.0
 # Aim mode (guns only)
 var is_aiming := false
 var aim_pitch := 0.0  # radians, 0 = straight, negative = up, positive = down
-const AIM_PITCH_SPEED := 1.3  # rad/s
+const AIM_PITCH_SPEED := 1.7  # rad/s
 const AIM_PITCH_MAX := 1.5
 const AIM_PISTOL_SPEED_MULT := 0.8
+const PRECISION_AIM_ASSIST_MIN_DISTANCE := 120.0
+const PRECISION_AIM_ASSIST_MAX_DISTANCE := 2400.0
+const PRECISION_AIM_ASSIST_ANGLE_NEAR_DEG := 9.0
+const PRECISION_AIM_ASSIST_ANGLE_FAR_DEG := 16.0
+const PRECISION_AIM_ASSIST_NEAR_STRENGTH := 0.24
+const PRECISION_AIM_ASSIST_FAR_STRENGTH := 0.62
+const PRECISION_AIM_ASSIST_FALLBACK_DOT := 0.5
 
 # Tactical item slot
 var current_tactical: TacticalData = null
+var is_tactical_aiming := false
+var tactical_throw_strong := true
+const TACTICAL_THROW_FORCE_STRONG := 2.5
+const TACTICAL_THROW_FORCE_WEAK := 1.5
+const TACTICAL_THROW_UP_STRONG := -300.0
+const TACTICAL_THROW_UP_WEAK := -180.0
 
 # Freeze debuff
 var is_frozen := false
@@ -94,6 +114,9 @@ var is_crouching := false
 var is_sprinting := false
 var facing_direction := 1  # 1 = right, -1 = left
 var is_dead := false
+var shield_amount := 0.0
+var shield_decay_rate := 0.0
+var confusion_timer := 0.0
 
 # Coyote time (grace jump after walking off an edge)
 const COYOTE_TIME := 0.12
@@ -129,6 +152,7 @@ var _ai_stuck_timer := 0.0
 var _ai_skill_timer := 0.0
 var _ai_item_timer := 0.0
 var _ai_last_pos := Vector2.ZERO
+var opponent_player: CharacterBody2D = null
 
 
 func _ready() -> void:
@@ -145,15 +169,44 @@ func _ready() -> void:
 	_tactical_pickup_scene = load("res://scenes/tactical/tactical_pickup.tscn")
 	hitbox_collision.disabled = true
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
+	if not damage_dealt.is_connected(_on_damage_dealt):
+		damage_dealt.connect(_on_damage_dealt)
 
 
 func _init_skill() -> void:
-	match character:
+	set_skill_by_id(character)
+
+
+func _on_damage_dealt(amount: float) -> void:
+	if skill:
+		skill.on_damage_dealt(self, amount)
+
+
+func set_skill_by_id(skill_id: int) -> void:
+	character = skill_id
+	match skill_id:
 		Character.TSUTAYA:
 			skill = DashSkill.new()
 		Character.AICHOK:
 			skill = LifeStealSkill.new()
-	damage_dealt.connect(func(amount: float): skill.on_damage_dealt(self, amount))
+		Character.SHRINK:
+			skill = ShrinkSkill.new()
+		Character.INVISIBLE:
+			skill = InvisibleSkill.new()
+		_:
+			skill = DashSkill.new()
+
+
+func set_skill_by_name(skill_name: String) -> void:
+	var clean := skill_name.strip_edges().to_lower()
+	for sid in SKILL_NAMES.keys():
+		if String(SKILL_NAMES[sid]).to_lower() == clean:
+			set_skill_by_id(sid)
+			return
+
+
+static func get_skill_options() -> PackedStringArray:
+	return PackedStringArray(["Dash", "Life Steal", "Shrink", "Invisible"])
 
 
 func set_ai_control(enabled: bool, target: CharacterBody2D) -> void:
@@ -192,6 +245,14 @@ func _is_just_pressed(suffix: String) -> bool:
 
 
 func _get_axis(neg_suffix: String, pos_suffix: String) -> float:
+	var swap_lr := confusion_timer > 0.0 and (
+		(neg_suffix == "left" and pos_suffix == "right")
+		or (neg_suffix == "right" and pos_suffix == "left")
+	)
+	if swap_lr:
+		var tmp := neg_suffix
+		neg_suffix = pos_suffix
+		pos_suffix = tmp
 	if is_ai_controlled:
 		var neg := 1.0 if _is_pressed(neg_suffix) else 0.0
 		var pos := 1.0 if _is_pressed(pos_suffix) else 0.0
@@ -357,6 +418,8 @@ func _update_ai_input(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+	if opponent_player == null or opponent_player == self:
+		opponent_player = _resolve_opponent_player()
 	if is_ai_controlled:
 		_update_ai_input(delta)
 
@@ -370,7 +433,7 @@ func _physics_process(delta: float) -> void:
 	_handle_movement(delta)
 	_handle_attack()
 	_handle_reload()
-	_handle_tactical()
+	_handle_tactical(delta)
 	_handle_skill(delta)
 	_handle_freeze(delta)
 	_handle_jetpack(delta)
@@ -383,6 +446,10 @@ func _physics_process(delta: float) -> void:
 # --- Timers ---
 
 func _update_timers(delta: float) -> void:
+	if shield_amount > 0.0:
+		shield_amount = maxf(0.0, shield_amount - shield_decay_rate * delta)
+	if confusion_timer > 0.0:
+		confusion_timer = maxf(0.0, confusion_timer - delta)
 	if _attack_timer > 0.0:
 		_attack_timer -= delta
 	if _attack_visual_timer > 0.0:
@@ -427,6 +494,8 @@ func _apply_gravity(delta: float) -> void:
 
 func _handle_jump() -> void:
 	var pistol_aiming := is_aiming and current_gun and current_gun.gun_category == WeaponData.GunCategory.PISTOL
+	if is_tactical_aiming:
+		return
 	if is_aiming and not pistol_aiming:
 		return
 	var can_jump := is_on_floor() or _coyote_timer > 0.0
@@ -444,7 +513,7 @@ func _handle_jump() -> void:
 # --- Crouch ---
 
 func _handle_crouch() -> void:
-	if is_aiming:
+	if is_aiming or is_tactical_aiming:
 		return
 	var was_crouching := is_crouching
 	is_crouching = _is_pressed("crouch") and is_on_floor()
@@ -456,7 +525,7 @@ func _handle_crouch() -> void:
 # --- Descend through one-way platforms (double-tap crouch) ---
 
 func _handle_descend(delta: float) -> void:
-	if is_aiming:
+	if is_aiming or is_tactical_aiming:
 		return
 	if _descend_tap_count > 0:
 		_descend_timer -= delta
@@ -477,7 +546,7 @@ func _handle_descend(delta: float) -> void:
 # --- Sprint & Stamina ---
 
 func _handle_sprint(delta: float) -> void:
-	if is_aiming:
+	if is_aiming or is_tactical_aiming:
 		is_sprinting = false
 		return
 	var wants_sprint := _is_pressed("sprint")
@@ -502,6 +571,23 @@ func _handle_sprint(delta: float) -> void:
 # --- Aim mode (gun only) ---
 
 func _handle_aim(delta: float) -> void:
+	if is_crouching:
+		if is_tactical_aiming:
+			_exit_tactical_aim()
+		if is_aiming:
+			is_aiming = false
+			_burst_remaining = 0
+		return
+
+	if is_tactical_aiming:
+		if (is_ai_controlled and _is_pressed("left")) or _is_just_pressed("left"):
+			facing_direction = -1
+		elif (is_ai_controlled and _is_pressed("right")) or _is_just_pressed("right"):
+			facing_direction = 1
+		var tactical_pitch_input := _get_axis("jump", "crouch")
+		aim_pitch = clampf(aim_pitch + tactical_pitch_input * AIM_PITCH_SPEED * delta, -AIM_PITCH_MAX, AIM_PITCH_MAX)
+		return
+
 	if current_gun == null:
 		if is_aiming:
 			is_aiming = false
@@ -528,7 +614,7 @@ func _handle_aim(delta: float) -> void:
 # --- Horizontal movement ---
 
 func _handle_movement(_delta: float) -> void:
-	var can_move_while_aiming := is_aiming and current_gun and current_gun.gun_category == WeaponData.GunCategory.PISTOL
+	var can_move_while_aiming := (is_aiming and current_gun and current_gun.gun_category == WeaponData.GunCategory.PISTOL) or is_tactical_aiming
 	if is_crouching or _hit_stun_timer > 0.0 or (is_aiming and not can_move_while_aiming):
 		velocity.x = move_toward(velocity.x, 0.0, DECELERATION * _delta)
 		return
@@ -548,6 +634,8 @@ func _handle_movement(_delta: float) -> void:
 # --- Attack ---
 
 func _handle_attack() -> void:
+	if is_tactical_aiming:
+		return
 	if _attack_timer > 0.0 or _hit_stun_timer > 0.0 or _equip_timer > 0.0:
 		return
 
@@ -619,6 +707,7 @@ func _perform_melee_attack(type: int, dmg: float, kb: float, cooldown: float, m_
 	hitbox.set_meta("damage", dmg)
 	hitbox.set_meta("knockback", kb)
 	hitbox.set_meta("direction", facing_direction)
+	AudioManager.play_sfx_varied("melee_swing", -3.0, 0.94, 1.08)
 	if lunge > 0.0:
 		velocity.x += lunge * facing_direction
 
@@ -637,18 +726,24 @@ func _shoot() -> void:
 		shoot_dir = Vector2(facing_direction, 0.0).rotated(aim_pitch * facing_direction)
 		aim_pitch = clampf(aim_pitch - current_gun.recoil_kick, -AIM_PITCH_MAX, AIM_PITCH_MAX)
 
+	var aim_assist := _get_precision_aim_assist(shoot_dir)
+	shoot_dir = aim_assist.direction
+	var spread_scale: float = aim_assist.spread_scale
+
 	for i in current_gun.pellets:
 		var bullet: Area2D = _projectile_scene.instantiate()
-		bullet.global_position = global_position + Vector2(20.0 * facing_direction, -32.0)
-		var spread := 0.0
-		if current_gun.pellets > 1:
-			spread = randf_range(-0.15, 0.15)
+		bullet.global_position = global_position + Vector2(10.0 * facing_direction, -32.0)
+		bullet.call("apply_rarity_color", current_gun.get_rarity_color())
+		var spread_radians := deg_to_rad(current_gun.spread * spread_scale)
+		var spread := randf_range(-spread_radians, spread_radians) if spread_radians > 0.0 else 0.0
 		bullet.direction = shoot_dir.rotated(spread).normalized()
 		bullet.speed = current_gun.velocity
 		bullet.damage = current_gun.damage
 		bullet.knockback = current_gun.knockback
 		bullet.owner_id = player_id
 		get_tree().current_scene.add_child(bullet)
+
+	AudioManager.play_sfx_varied(_gun_sfx_event(current_gun), -1.5, 0.96, 1.04)
 
 	# Recoil pushback on player
 	velocity.x -= current_gun.recoil * facing_direction
@@ -658,18 +753,141 @@ func _shoot() -> void:
 		_start_reload()
 
 
+func _get_precision_aim_assist(base_dir: Vector2) -> Dictionary:
+	if not GameState.aim_assist_enabled:
+		return {"direction": base_dir.normalized(), "spread_scale": 1.0}
+	if current_gun == null or not is_aiming or not _is_precision_class(current_gun):
+		return {"direction": base_dir.normalized(), "spread_scale": 1.0}
+
+	var corrected_dir := base_dir.normalized()
+	var spread_scale := 0.78
+	var target_info := _find_precision_assist_target(corrected_dir)
+	if target_info.is_empty():
+		return {"direction": corrected_dir, "spread_scale": spread_scale}
+
+	var target_dir: Vector2 = target_info["direction"]
+	var distance: float = target_info["distance"]
+	var t := clampf(
+		inverse_lerp(PRECISION_AIM_ASSIST_MIN_DISTANCE, PRECISION_AIM_ASSIST_MAX_DISTANCE, distance),
+		0.0,
+		1.0
+	)
+	var assist_strength := lerpf(PRECISION_AIM_ASSIST_NEAR_STRENGTH, PRECISION_AIM_ASSIST_FAR_STRENGTH, t)
+	corrected_dir = corrected_dir.slerp(target_dir, assist_strength).normalized()
+	spread_scale = lerpf(0.78, 0.58, t)
+	return {"direction": corrected_dir, "spread_scale": spread_scale}
+
+
+func get_precision_assist_status() -> Dictionary:
+	if not GameState.aim_assist_enabled:
+		return {"active": false, "reason": "DISABLED", "distance": 0.0}
+	if current_gun == null:
+		return {"active": false, "reason": "NO GUN", "distance": 0.0}
+	if not is_aiming:
+		return {"active": false, "reason": "NOT AIMING", "distance": 0.0}
+	if not _is_precision_class(current_gun):
+		return {"active": false, "reason": "NON-PRECISION", "distance": 0.0}
+
+	var base_dir := Vector2(facing_direction, 0.0).rotated(aim_pitch * facing_direction).normalized()
+	var target_info := _find_precision_assist_target(base_dir)
+	if target_info.is_empty():
+		return {"active": false, "reason": "NO TARGET", "distance": 0.0}
+
+	return {
+		"active": true,
+		"reason": "ACTIVE",
+		"distance": float(target_info.get("distance", 0.0))
+	}
+
+
+func _is_precision_class(w: WeaponData) -> bool:
+	return w.gun_category == WeaponData.GunCategory.SNIPER \
+		or w.gun_category == WeaponData.GunCategory.DMR
+
+
+func _find_precision_assist_target(base_dir: Vector2) -> Dictionary:
+	var muzzle := global_position + Vector2(20.0 * facing_direction, -32.0)
+	var target := opponent_player
+	if target == null or target == self or ("is_dead" in target and target.is_dead):
+		target = _resolve_opponent_player()
+		opponent_player = target
+	if target == null:
+		return {}
+
+	var aim_point := target.global_position + Vector2(0.0, -32.0)
+	var to_target := aim_point - muzzle
+	var distance := to_target.length()
+	if distance < PRECISION_AIM_ASSIST_MIN_DISTANCE or distance > PRECISION_AIM_ASSIST_MAX_DISTANCE:
+		return {}
+
+	var t := clampf(
+		inverse_lerp(PRECISION_AIM_ASSIST_MIN_DISTANCE, PRECISION_AIM_ASSIST_MAX_DISTANCE, distance),
+		0.0,
+		1.0
+	)
+	var cone_angle := lerpf(PRECISION_AIM_ASSIST_ANGLE_NEAR_DEG, PRECISION_AIM_ASSIST_ANGLE_FAR_DEG, t)
+	var max_angle_cos := cos(deg_to_rad(cone_angle))
+
+	var dir_to_target := to_target / distance
+	var facing_alignment := base_dir.dot(dir_to_target)
+	if facing_alignment >= max_angle_cos:
+		return {"direction": dir_to_target, "distance": distance}
+
+	# Soft fallback for quick reticle movement: target still in front.
+	if facing_alignment > PRECISION_AIM_ASSIST_FALLBACK_DOT:
+		return {"direction": dir_to_target, "distance": distance}
+
+	return {}
+
+
+func _resolve_opponent_player() -> CharacterBody2D:
+	for node in get_tree().get_nodes_in_group("players"):
+		var p := node as CharacterBody2D
+		if p != null and p != self:
+			return p
+	return null
+
+
 # --- Tactical items ---
 
-func _handle_tactical() -> void:
+func _handle_tactical(_delta: float) -> void:
 	if current_tactical == null or is_dead:
+		if is_tactical_aiming:
+			_exit_tactical_aim()
 		return
+
+	if is_crouching:
+		if is_tactical_aiming:
+			_exit_tactical_aim()
+		return
+
+	if _is_throwable_tactical(current_tactical):
+		if is_ai_controlled:
+			if _is_just_pressed("item"):
+				_throw_equipped_tactical()
+			return
+
+		if _is_just_pressed("item"):
+			if not is_tactical_aiming:
+				_enter_tactical_aim()
+			else:
+				_exit_tactical_aim()
+
+		if is_tactical_aiming:
+			if _is_just_pressed("attack"):
+				_throw_equipped_tactical()
+			elif _is_just_pressed("reload"):
+				_toggle_tactical_throw_force()
+		return
+
 	if _is_just_pressed("item"):
 		_use_tactical()
 
 
 func _use_tactical() -> void:
 	var tac := current_tactical
-	current_tactical = null
+	_exit_tactical_aim()
+	AudioManager.play_sfx_varied("use_tactical", -2.0, 0.95, 1.05)
 	match tac.tactical_type:
 		TacticalData.TacticalType.FRAG_GRENADE, \
 		TacticalData.TacticalType.FLASH_FREEZE:
@@ -678,19 +896,110 @@ func _use_tactical() -> void:
 			_throw_tactical(tac)
 		TacticalData.TacticalType.MED_KIT:
 			hp = minf(hp + tac.heal_amount, HP_MAX)
+			AudioManager.play_sfx_varied("use_medkit", -1.0, 0.98, 1.05)
 		TacticalData.TacticalType.JETPACK:
 			is_jetpacking = true
 			_jetpack_timer = tac.flight_duration
 			_jetpack_force = tac.flight_force
+			AudioManager.play_sfx_varied("use_jetpack", -1.0, 0.98, 1.03)
+		TacticalData.TacticalType.SHIELD:
+			activate_shield(tac.shield_amount, tac.duration)
+		TacticalData.TacticalType.CONFUSION:
+			var target := _resolve_opponent_player()
+			if target and target.has_method("apply_confusion"):
+				target.apply_confusion(tac.duration)
+	_consume_tactical_charge()
 
 
-func _throw_tactical(tac: TacticalData) -> void:
+func _enter_tactical_aim() -> void:
+	if is_crouching or current_tactical == null or not _is_throwable_tactical(current_tactical):
+		return
+	is_tactical_aiming = true
+	is_aiming = false
+	_burst_remaining = 0
+	aim_pitch = 0.0
+
+
+func _exit_tactical_aim() -> void:
+	is_tactical_aiming = false
+
+
+func _toggle_tactical_throw_force() -> void:
+	tactical_throw_strong = not tactical_throw_strong
+	AudioManager.play_sfx_varied("ui_click", -8.0, 0.96, 1.04)
+
+
+func _throw_equipped_tactical() -> void:
+	if current_tactical == null or not _is_throwable_tactical(current_tactical):
+		return
+	var tac: TacticalData = current_tactical
+	# Capture aimed throw velocity BEFORE clearing current_tactical
+	var throw_velocity := get_tactical_throw_velocity()
+	_exit_tactical_aim()
+	AudioManager.play_sfx_varied("use_tactical", -2.0, 0.95, 1.05)
+	_throw_tactical(tac, throw_velocity)
+	_consume_tactical_charge()
+
+
+func _consume_tactical_charge() -> void:
+	if current_tactical == null:
+		return
+	current_tactical.charges = maxi(current_tactical.charges - 1, 0)
+	if current_tactical.charges <= 0:
+		current_tactical = null
+
+
+func _is_throwable_tactical(tac: TacticalData) -> bool:
+	if tac == null:
+		return false
+	return tac.tactical_type == TacticalData.TacticalType.FRAG_GRENADE \
+		or tac.tactical_type == TacticalData.TacticalType.FLASH_FREEZE \
+		or tac.tactical_type == TacticalData.TacticalType.MOLOTOV
+
+
+func get_tactical_throw_velocity() -> Vector2:
+	if not is_tactical_aiming or current_tactical == null or not _is_throwable_tactical(current_tactical):
+		return Vector2.ZERO
+	var dir := Vector2(facing_direction, 0.0).rotated(aim_pitch * facing_direction).normalized()
+	var force_mult := TACTICAL_THROW_FORCE_STRONG if tactical_throw_strong else TACTICAL_THROW_FORCE_WEAK
+	var upward := TACTICAL_THROW_UP_STRONG if tactical_throw_strong else TACTICAL_THROW_UP_WEAK
+	return dir * (current_tactical.throw_speed * force_mult) + Vector2(0.0, upward)
+
+
+func is_tactical_throw_strong() -> bool:
+	return tactical_throw_strong
+
+
+func activate_shield(amount: float, decay_duration: float) -> void:
+	shield_amount = maxf(amount, 0.0)
+	if decay_duration > 0.0:
+		shield_decay_rate = shield_amount / decay_duration
+	else:
+		shield_decay_rate = 0.0
+
+
+func apply_confusion(duration: float) -> void:
+	confusion_timer = maxf(confusion_timer, duration)
+
+
+func get_visual_alpha() -> float:
+	if skill:
+		return clampf(skill.get_visual_alpha(), 0.0, 1.0)
+	return 1.0
+
+
+func _throw_tactical(tac: TacticalData, aimed_velocity: Vector2 = Vector2.ZERO) -> void:
 	var thrown: Area2D = _thrown_tactical_scene.instantiate()
 	thrown.global_position = global_position + Vector2(16.0 * facing_direction, -32.0)
-	var dir := Vector2(facing_direction, 0.0)
-	if is_aiming:
-		dir = Vector2(facing_direction, 0.0).rotated(aim_pitch * facing_direction)
-	thrown.init(tac, dir, player_id)
+	var initial_velocity: Vector2
+	if aimed_velocity != Vector2.ZERO:
+		# Use the aimed velocity (from tactical aiming)
+		initial_velocity = aimed_velocity
+	else:
+		# Fallback for non-aimed throws (AI, quick throw)
+		initial_velocity = Vector2(facing_direction, 0.0) * tac.throw_speed + Vector2(0.0, TACTICAL_THROW_UP_WEAK)
+	var thrown_tac := tac.duplicate(true) as TacticalData
+	thrown.init(thrown_tac, initial_velocity, player_id)
 	get_tree().current_scene.add_child(thrown)
 
 
@@ -701,6 +1010,7 @@ func _handle_tactical_pickup() -> void:
 		if area.has_method("init") and area.get("tactical_data") != null:
 			current_tactical = area.tactical_data
 			area.queue_free()
+			AudioManager.play_sfx_varied("pickup_tactical", -3.0, 0.97, 1.05)
 			break
 
 
@@ -746,6 +1056,8 @@ func _handle_jetpack(delta: float) -> void:
 # --- Reload ---
 
 func _handle_reload() -> void:
+	if is_tactical_aiming:
+		return
 	if current_gun == null:
 		return
 	if _is_just_pressed("reload") and not is_reloading:
@@ -769,6 +1081,7 @@ func _start_reload() -> void:
 		return
 	is_reloading = true
 	_reload_timer = current_gun.reload_time
+	AudioManager.play_sfx_varied("reload", -3.0, 0.98, 1.04)
 
 
 # --- Weapon pickup / drop ---
@@ -800,6 +1113,7 @@ func _swap_weapon() -> void:
 		current_melee = data
 		_equip_timer = data.equip_time
 	nearest.queue_free()
+	AudioManager.play_sfx_varied("pickup_weapon", -2.0, 0.96, 1.05)
 
 
 func _handle_weapon_pickup() -> void:
@@ -815,17 +1129,21 @@ func _handle_weapon_pickup() -> void:
 			ammo_reserve = area.ammo_reserve
 			_equip_timer = data.equip_time
 			area.queue_free()
+			AudioManager.play_sfx_varied("pickup_weapon", -2.0, 0.97, 1.05)
 			break
 		elif data.type == WeaponData.Type.MELEE and current_melee == null:
 			current_melee = data
 			_equip_timer = data.equip_time
 			area.queue_free()
+			AudioManager.play_sfx_varied("pickup_weapon", -2.0, 0.97, 1.05)
 			break
 
 
 func _drop_gun(spawn_pickup: bool = true) -> void:
 	if current_gun == null:
 		return
+	if GameState.game_mode == GameState.MODE_ARMS_DEALER:
+		spawn_pickup = false
 	if spawn_pickup:
 		var pickup: Area2D = _pickup_scene.instantiate()
 		pickup.global_position = global_position + Vector2(0, -20)
@@ -845,6 +1163,8 @@ func _drop_gun(spawn_pickup: bool = true) -> void:
 func _drop_melee(spawn_pickup: bool = true) -> void:
 	if current_melee == null:
 		return
+	if GameState.game_mode == GameState.MODE_ARMS_DEALER:
+		spawn_pickup = false
 	if spawn_pickup:
 		var pickup: Area2D = _pickup_scene.instantiate()
 		pickup.global_position = global_position + Vector2(0, -20)
@@ -871,6 +1191,7 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	var dir: int = hitbox.get_meta("direction")
 	body.take_damage(dmg, kb, dir)
 	damage_dealt.emit(dmg)
+	AudioManager.play_sfx_varied("melee_hit", -2.5, 0.95, 1.07)
 
 
 # --- Damage ---
@@ -900,8 +1221,17 @@ func _spawn_damage_number(amount: float) -> void:
 func take_damage(amount: float, knockback_force: float, direction: int) -> void:
 	if is_dead or _spawn_invuln_timer > 0.0:
 		return
+	if skill:
+		skill.on_owner_damaged(self, amount)
+	if shield_amount > 0.0 and amount > 0.0:
+		var absorbed := minf(shield_amount, amount)
+		shield_amount -= absorbed
+		amount -= absorbed
+	if amount <= 0.0:
+		return
 	hp -= amount
 	_spawn_damage_number(amount)
+	AudioManager.play_sfx_varied("hurt", -4.0, 0.96, 1.05)
 	_regen_timer = HP_REGEN_DELAY  # reset regen delay on every hit
 	_hit_stun_timer = HIT_STUN_DURATION
 	velocity.x = knockback_force * direction
@@ -913,6 +1243,7 @@ func take_damage(amount: float, knockback_force: float, direction: int) -> void:
 
 func _die() -> void:
 	is_dead = true
+	AudioManager.play_sfx_varied("death", -2.0, 0.96, 1.02)
 	velocity = Vector2.ZERO
 	hitbox_collision.disabled = true
 	standing_collision.disabled = true
@@ -959,8 +1290,35 @@ func reset(spawn_position: Vector2) -> void:
 	ammo_current = 0
 	ammo_reserve = 0
 	current_tactical = null
+	is_tactical_aiming = false
+	shield_amount = 0.0
+	shield_decay_rate = 0.0
+	confusion_timer = 0.0
+	scale = Vector2.ONE
 	is_frozen = false
 	_freeze_timer = 0.0
 	is_jetpacking = false
 	_jetpack_timer = 0.0
 	skill.reset()
+
+
+func _gun_sfx_event(gun: WeaponData) -> String:
+	if gun.sfx_event != "":
+		return gun.sfx_event
+	match gun.gun_category:
+		WeaponData.GunCategory.PISTOL:
+			return "gun_pistol"
+		WeaponData.GunCategory.ASSAULT_RIFLE, WeaponData.GunCategory.BATTLE_RIFLE:
+			return "gun_rifle"
+		WeaponData.GunCategory.SMG:
+			return "gun_smg"
+		WeaponData.GunCategory.LMG:
+			return "gun_lmg"
+		WeaponData.GunCategory.SHOTGUN:
+			return "gun_shotgun"
+		WeaponData.GunCategory.SNIPER:
+			return "gun_sniper"
+		WeaponData.GunCategory.DMR:
+			return "gun_dmr"
+		_:
+			return "gun_rifle"

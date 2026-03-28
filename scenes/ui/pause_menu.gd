@@ -47,15 +47,18 @@ func _input(event: InputEvent) -> void:
 
 func open() -> void:
 	visible = true
+	AudioManager.play_sfx_varied("ui_click", -5.5, 0.98, 1.03)
 	get_tree().paused = true
 
 
 func close() -> void:
 	visible = false
 	get_tree().paused = false
+	AudioManager.play_sfx_varied("ui_back", -5.5, 0.98, 1.03)
 
 
 func _on_quit() -> void:
+	AudioManager.play_sfx_varied("ui_back", -5.5, 0.98, 1.03)
 	get_tree().paused = false
 	quit_to_menu.emit()
 

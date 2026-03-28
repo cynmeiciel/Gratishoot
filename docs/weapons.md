@@ -26,6 +26,7 @@ Rare: AN-94, M16A4, FN FAL
 Epic: Honey Badger, AUG A3, GROZA
 Legendary: STV-380, ARX 160
 Mythic: TAR-21
+Contraband: VX-Null Carbine
 
 
 ## Battle Rifle:
@@ -88,6 +89,7 @@ Damage: the amount of HP reduced from the target per hit.
 Velocity: the speed of the projectile (for guns) or the melee attack.
 Fire Rate: the number of shots/melee strikes per second.
 Knockback: the distance the target is pushed back upon being hit.
+Spread: random inaccuracy in shot angle, measured in degrees per shot. Higher spread means less precise fire.
 Recoil: the amount of backward force experienced by the player when firing a gun.
 Recoil Kick: the vertical component of recoil that causes the gun to rise after firing.
 Reload Time: the time it takes to reload a gun's magazine.

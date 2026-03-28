@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b5xvk7eb1ig6y"]
+[gd_scene load_steps=14 format=3 uid="uid://b5xvk7eb1ig6y"]
 
 [ext_resource type="PackedScene" uid="uid://dslvefkuei8rb" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://c8xi1kt2ogno0" path="res://scenes/arena/arena_manager.gd" id="2_manager"]
@@ -7,6 +7,15 @@
 
 [sub_resource type="RectangleShape2D" id="SubResource_ground"]
 size = Vector2(3400, 40)
+
+[sub_resource type="RectangleShape2D" id="SubResource_cover_mid"]
+size = Vector2(120, 128)
+
+[sub_resource type="RectangleShape2D" id="SubResource_cover_tall"]
+size = Vector2(130, 168)
+
+[sub_resource type="RectangleShape2D" id="SubResource_cover_short"]
+size = Vector2(110, 96)
 
 [sub_resource type="RectangleShape2D" id="SubResource_wall"]
 size = Vector2(20, 1644.5)
@@ -60,6 +69,93 @@ offset_top = -20.0
 offset_right = 1700.0
 offset_bottom = 20.0
 color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="CoverLeft" type="StaticBody2D" parent="."]
+position = Vector2(1110, 932)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="CoverLeft"]
+shape = SubResource("SubResource_cover_mid")
+
+[node name="Visual" type="ColorRect" parent="CoverLeft"]
+offset_left = -60.0
+offset_top = -64.0
+offset_right = 60.0
+offset_bottom = 64.0
+color = Color(0.36, 0.43, 0.5, 1)
+
+[node name="CoverCenter4" type="StaticBody2D" parent="."]
+position = Vector2(1902, 515)
+scale = Vector2(0.33030796, 0.26010388)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="CoverCenter4"]
+shape = SubResource("SubResource_cover_tall")
+
+[node name="Visual" type="ColorRect" parent="CoverCenter4"]
+offset_left = -65.0
+offset_top = -84.0
+offset_right = 65.0
+offset_bottom = 84.0
+color = Color(0.34, 0.41, 0.48, 1)
+
+[node name="CoverCenter3" type="StaticBody2D" parent="."]
+position = Vector2(1501.9999, 512)
+scale = Vector2(0.366214, 0.22180162)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="CoverCenter3"]
+shape = SubResource("SubResource_cover_tall")
+
+[node name="Visual" type="ColorRect" parent="CoverCenter3"]
+offset_left = -65.0
+offset_top = -84.0
+offset_right = 65.0
+offset_bottom = 84.0
+color = Color(0.34, 0.41, 0.48, 1)
+
+[node name="CoverCenter2" type="StaticBody2D" parent="."]
+position = Vector2(1700, 634)
+scale = Vector2(1, 0.37655908)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="CoverCenter2"]
+shape = SubResource("SubResource_cover_tall")
+
+[node name="Visual" type="ColorRect" parent="CoverCenter2"]
+offset_left = -65.0
+offset_top = -84.0
+offset_right = 65.0
+offset_bottom = 84.0
+color = Color(0.34, 0.41, 0.48, 1)
+
+[node name="CoverCenter" type="StaticBody2D" parent="."]
+position = Vector2(1700, 912)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="CoverCenter"]
+shape = SubResource("SubResource_cover_tall")
+
+[node name="Visual" type="ColorRect" parent="CoverCenter"]
+offset_left = -65.0
+offset_top = -84.0
+offset_right = 65.0
+offset_bottom = 84.0
+color = Color(0.34, 0.41, 0.48, 1)
+
+[node name="CoverRight" type="StaticBody2D" parent="."]
+position = Vector2(2290, 948)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape2D" parent="CoverRight"]
+shape = SubResource("SubResource_cover_short")
+
+[node name="Visual" type="ColorRect" parent="CoverRight"]
+offset_left = -55.0
+offset_top = -48.0
+offset_right = 55.0
+offset_bottom = 48.0
+color = Color(0.36, 0.43, 0.5, 1)
 
 [node name="WallLeft" type="StaticBody2D" parent="."]
 position = Vector2(-10, 560)

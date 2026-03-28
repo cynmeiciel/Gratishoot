@@ -98,7 +98,7 @@ func _update_player_panel(p: CharacterBody2D, is_left: bool) -> void:
 			border_col = p.player_color.lerp(Color.RED, pulse)
 		panel_box.border_color = border_col
 
-	title.text = "P%d %s" % [p.player_id, _character_name(p)]
+	title.text = "%s" % _player_name_for_id(p.player_id)
 	title.modulate = p.player_color.lerp(Color.WHITE, 0.30)
 	hp_value.text = "%d / %d" % [ceili(p.hp), int(p.HP_MAX)]
 	hp_value.modulate = Color.WHITE.lerp(Color(1.0, 0.25, 0.10), 1.0 - hp_frac)
@@ -123,16 +123,28 @@ func _update_player_panel(p: CharacterBody2D, is_left: bool) -> void:
 	stamina_bar.value = p.stamina
 
 	var gun_name := "Unarmed"
+	var gun_category := ""
 	var gun_mode := ""
 	if p.current_gun:
 		gun_name = p.current_gun.weapon_name
+		var category_names := {
+			WeaponData.GunCategory.PISTOL: "Pistol",
+			WeaponData.GunCategory.SMG: "SMG",
+			WeaponData.GunCategory.SHOTGUN: "Shotgun",
+			WeaponData.GunCategory.ASSAULT_RIFLE: "AR",
+			WeaponData.GunCategory.LMG: "LMG",
+			WeaponData.GunCategory.BATTLE_RIFLE: "BR",
+			WeaponData.GunCategory.DMR: "DMR",
+			WeaponData.GunCategory.SNIPER: "Sniper"
+		}
+		gun_category = category_names.get(p.current_gun.gun_category, "")
 		var mode_names := {
 			WeaponData.FireMode.SINGLE: "SINGLE",
 			WeaponData.FireMode.BURST: "BURST",
 			WeaponData.FireMode.AUTO: "AUTO"
 		}
 		gun_mode = mode_names.get(p.current_gun.fire_mode, "")
-	gun_label.text = _clip_text(("%s %s" % [gun_name, gun_mode]).strip_edges(), 28)
+	gun_label.text = _clip_text(("%s [%s] %s" % [gun_name, gun_category, gun_mode]).strip_edges(), 36)
 	gun_label.modulate = p.current_gun.get_rarity_color() if p.current_gun else Color(0.65, 0.65, 0.65)
 
 	if p.current_gun:
@@ -159,7 +171,10 @@ func _update_player_panel(p: CharacterBody2D, is_left: bool) -> void:
 
 	var tac_text := "None"
 	if p.current_tactical:
-		tac_text = p.current_tactical.item_name
+		if p.current_tactical.charges > 1:
+			tac_text = "%s x%d" % [p.current_tactical.item_name, p.current_tactical.charges]
+		else:
+			tac_text = p.current_tactical.item_name
 	var skill_name: String = p.skill.get_skill_name() if p.skill else "Skill"
 	misc_label.text = _clip_text("%s | %s" % [tac_text, skill_name], 34)
 	tac_dot.color = p.current_tactical.get_color() if p.current_tactical else Color(0.35, 0.35, 0.35)
@@ -244,10 +259,10 @@ func _update_victory_ui() -> void:
 		return
 
 	if p1w >= rtw:
-		victory_text.text = ("P1 %s WINS!" % _character_name(player1)).to_upper()
+		victory_text.text = ("%s WINS!" % _player_name_for_id(1)).to_upper()
 		victory_text.modulate = player1.player_color
 	else:
-		victory_text.text = ("P2 %s WINS!" % _character_name(player2)).to_upper()
+		victory_text.text = ("%s WINS!" % _player_name_for_id(2)).to_upper()
 		victory_text.modulate = player2.player_color
 	victory_hint.text = "Press Enter to restart"
 
@@ -292,8 +307,12 @@ func _setup_panel_style(panel: PanelContainer) -> void:
 	panel.add_theme_stylebox_override("panel", box)
 
 
-func _character_name(p: CharacterBody2D) -> String:
-	return "Tsutaya" if p.character == p.Character.TSUTAYA else "Aichok"
+func _player_name_for_id(pid: int) -> String:
+	if pid == 1:
+		return GameState.p1_name
+	if pid == 2:
+		return GameState.p2_name
+	return "Player"
 
 
 func _clear_children(node: Node) -> void:

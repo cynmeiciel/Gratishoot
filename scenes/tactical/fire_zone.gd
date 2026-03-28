@@ -40,8 +40,16 @@ func _physics_process(delta: float) -> void:
 func _apply_damage() -> void:
 	for body in get_overlapping_bodies():
 		if body is CharacterBody2D and body.has_method("take_damage"):
+			var dist := global_position.distance_to(body.global_position + Vector2(0, -32))
+			var falloff := _calculate_damage_falloff(dist, _radius)
 			var dir_sign := 1 if body.global_position.x >= global_position.x else -1
-			body.take_damage(_damage_per_tick, 30.0, dir_sign)
+			body.take_damage(_damage_per_tick * falloff, 30.0, dir_sign)
+
+
+func _calculate_damage_falloff(distance: float, radius: float) -> float:
+	"""Calculate quadratic falloff: fire is hottest at center, cools down at edges."""
+	var normalized_dist := clampf(distance / radius, 0.0, 1.0)
+	return (1.0 - normalized_dist * normalized_dist)
 
 
 func _draw() -> void:

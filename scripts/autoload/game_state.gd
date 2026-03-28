@@ -3,8 +3,9 @@ extends Node
 const SETTINGS_PATH := "user://settings.cfg"
 const WINDOW_WINDOWED := 0
 const WINDOW_FULLSCREEN := 1
-const MODE_VERSUS := 0
+const MODE_CLASSIC_DUEL := 0
 const MODE_TRAINING := 1
+const MODE_ARMS_DEALER := 2
 const DEFAULT_BINDINGS := {
 	"p1_left": KEY_A,
 	"p1_right": KEY_D,
@@ -31,12 +32,15 @@ const DEFAULT_BINDINGS := {
 var rounds_to_win: int = 3
 var p1_character: int = 0
 var p2_character: int = 1
+var p1_name: String = "Player 1"
+var p2_name: String = "Player 2"
 var p1_color: Color = Color(0.2, 0.6, 1.0)
 var p2_color: Color = Color(1.0, 0.3, 0.2)
 var master_volume: float = 0.85
 var window_mode: int = WINDOW_WINDOWED
+var aim_assist_enabled: bool = true
 var key_bindings: Dictionary = {}
-var game_mode: int = MODE_VERSUS
+var game_mode: int = MODE_CLASSIC_DUEL
 var p2_is_ai: bool = false
 
 
@@ -62,11 +66,14 @@ func save_settings() -> void:
 	cfg.set_value("match", "rounds_to_win", rounds_to_win)
 	cfg.set_value("players", "p1_character", p1_character)
 	cfg.set_value("players", "p2_character", p2_character)
+	cfg.set_value("players", "p1_name", p1_name)
+	cfg.set_value("players", "p2_name", p2_name)
 	cfg.set_value("players", "p2_is_ai", p2_is_ai)
 	cfg.set_value("players", "p1_color", p1_color.to_html())
 	cfg.set_value("players", "p2_color", p2_color.to_html())
 	cfg.set_value("settings", "master_volume", master_volume)
 	cfg.set_value("settings", "window_mode", window_mode)
+	cfg.set_value("settings", "aim_assist_enabled", aim_assist_enabled)
 	for action in DEFAULT_BINDINGS.keys():
 		cfg.set_value("bindings", action, int(key_bindings.get(action, DEFAULT_BINDINGS[action])))
 	cfg.save(SETTINGS_PATH)
@@ -80,11 +87,14 @@ func load_settings() -> void:
 	rounds_to_win = int(cfg.get_value("match", "rounds_to_win", rounds_to_win))
 	p1_character = int(cfg.get_value("players", "p1_character", p1_character))
 	p2_character = int(cfg.get_value("players", "p2_character", p2_character))
+	p1_name = String(cfg.get_value("players", "p1_name", p1_name)).strip_edges()
+	p2_name = String(cfg.get_value("players", "p2_name", p2_name)).strip_edges()
 	p2_is_ai = bool(cfg.get_value("players", "p2_is_ai", p2_is_ai))
 	p1_color = Color(cfg.get_value("players", "p1_color", p1_color.to_html()))
 	p2_color = Color(cfg.get_value("players", "p2_color", p2_color.to_html()))
 	master_volume = float(cfg.get_value("settings", "master_volume", master_volume))
 	window_mode = int(cfg.get_value("settings", "window_mode", window_mode))
+	aim_assist_enabled = bool(cfg.get_value("settings", "aim_assist_enabled", aim_assist_enabled))
 
 	key_bindings.clear()
 	for action in DEFAULT_BINDINGS.keys():
@@ -92,8 +102,12 @@ func load_settings() -> void:
 
 	master_volume = clampf(master_volume, 0.0, 1.0)
 	rounds_to_win = maxi(1, mini(9, rounds_to_win))
-	p1_character = maxi(0, mini(1, p1_character))
-	p2_character = maxi(0, mini(1, p2_character))
+	p1_character = maxi(0, mini(3, p1_character))
+	p2_character = maxi(0, mini(3, p2_character))
+	if p1_name == "":
+		p1_name = "Player 1"
+	if p2_name == "":
+		p2_name = "Player 2"
 	window_mode = maxi(WINDOW_WINDOWED, mini(WINDOW_FULLSCREEN, window_mode))
 
 
