@@ -56,6 +56,10 @@ var attack_type := 0  # 0=none, 1=primary, 2=secondary
 var _attack_visual_timer := 0.0
 const ATTACK_VISUAL_DURATION := 0.15
 
+# Melee combo system
+var _melee_combo_active := false  # True if primary hit successfully, reduces secondary cooldown
+const MELEE_COMBO_SPEEDUP := 0.6  # Secondary cooldown multiplier after successful hit
+
 # Weapon — separate slots for gun and melee
 var current_gun: WeaponData = null
 var current_melee: WeaponData = null
@@ -71,7 +75,7 @@ var _burst_timer := 0.0
 var is_aiming := false
 var aim_pitch := 0.0  # radians, 0 = straight, negative = up, positive = down
 const AIM_PITCH_SPEED := 1.7  # rad/s
-const AIM_PITCH_MAX := 1.5
+const AIM_PITCH_MAX := 1.55
 const AIM_PISTOL_SPEED_MULT := 0.8
 const PRECISION_AIM_ASSIST_MIN_DISTANCE := 120.0
 const PRECISION_AIM_ASSIST_MAX_DISTANCE := 2400.0
@@ -143,6 +147,9 @@ var is_ai_controlled := false
 var ai_target: CharacterBody2D = null
 var _ai_actions: Dictionary = {}
 var _ai_prev_actions: Dictionary = {}
+var is_network_controlled := false
+var _net_actions: Dictionary = {}
+var _net_prev_actions: Dictionary = {}
 var _ai_shot_timer := 0.0
 var _ai_melee_timer := 0.0
 var _ai_jump_timer := 0.0
@@ -160,6 +167,8 @@ func _ready() -> void:
 	for action in ["left", "right", "jump", "crouch", "attack", "secondary", "sprint", "skill", "item", "reload"]:
 		_ai_actions[action] = false
 		_ai_prev_actions[action] = false
+		_net_actions[action] = false
+		_net_prev_actions[action] = false
 	add_to_group("players")
 	_init_skill()
 	_projectile_scene = load("res://scenes/weapon/projectile.tscn")
@@ -211,6 +220,7 @@ static func get_skill_options() -> PackedStringArray:
 
 func set_ai_control(enabled: bool, target: CharacterBody2D) -> void:
 	is_ai_controlled = enabled
+	is_network_controlled = false
 	ai_target = target
 	for action in _ai_actions.keys():
 		_ai_actions[action] = false
@@ -226,6 +236,22 @@ func set_ai_control(enabled: bool, target: CharacterBody2D) -> void:
 	_ai_last_pos = global_position
 
 
+func set_network_control(enabled: bool) -> void:
+	is_network_controlled = enabled
+	if enabled:
+		is_ai_controlled = false
+	for action in _net_actions.keys():
+		_net_actions[action] = false
+		_net_prev_actions[action] = false
+
+
+func apply_network_input(input_state: Dictionary) -> void:
+	if not is_network_controlled:
+		return
+	for action in _net_actions.keys():
+		_net_actions[action] = bool(input_state.get(action, false))
+
+
 func _action_name(suffix: String) -> String:
 	return _input_prefix + suffix
 
@@ -233,6 +259,8 @@ func _action_name(suffix: String) -> String:
 func _is_pressed(suffix: String) -> bool:
 	if is_ai_controlled:
 		return bool(_ai_actions.get(suffix, false))
+	if is_network_controlled:
+		return bool(_net_actions.get(suffix, false))
 	return Input.is_action_pressed(_action_name(suffix))
 
 
@@ -241,6 +269,10 @@ func _is_just_pressed(suffix: String) -> bool:
 		var now := bool(_ai_actions.get(suffix, false))
 		var prev := bool(_ai_prev_actions.get(suffix, false))
 		return now and not prev
+	if is_network_controlled:
+		var net_now := bool(_net_actions.get(suffix, false))
+		var net_prev := bool(_net_prev_actions.get(suffix, false))
+		return net_now and not net_prev
 	return Input.is_action_just_pressed(_action_name(suffix))
 
 
@@ -253,7 +285,7 @@ func _get_axis(neg_suffix: String, pos_suffix: String) -> float:
 		var tmp := neg_suffix
 		neg_suffix = pos_suffix
 		pos_suffix = tmp
-	if is_ai_controlled:
+	if is_ai_controlled or is_network_controlled:
 		var neg := 1.0 if _is_pressed(neg_suffix) else 0.0
 		var pos := 1.0 if _is_pressed(pos_suffix) else 0.0
 		return pos - neg
@@ -422,6 +454,9 @@ func _physics_process(delta: float) -> void:
 		opponent_player = _resolve_opponent_player()
 	if is_ai_controlled:
 		_update_ai_input(delta)
+	if is_network_controlled:
+		for k in _net_prev_actions.keys():
+			_net_prev_actions[k] = _net_actions[k]
 
 	_update_timers(delta)
 	_apply_gravity(delta)
@@ -580,9 +615,9 @@ func _handle_aim(delta: float) -> void:
 		return
 
 	if is_tactical_aiming:
-		if (is_ai_controlled and _is_pressed("left")) or _is_just_pressed("left"):
+		if ((is_ai_controlled or is_network_controlled) and _is_pressed("left")) or _is_just_pressed("left"):
 			facing_direction = -1
-		elif (is_ai_controlled and _is_pressed("right")) or _is_just_pressed("right"):
+		elif ((is_ai_controlled or is_network_controlled) and _is_pressed("right")) or _is_just_pressed("right"):
 			facing_direction = 1
 		var tactical_pitch_input := _get_axis("jump", "crouch")
 		aim_pitch = clampf(aim_pitch + tactical_pitch_input * AIM_PITCH_SPEED * delta, -AIM_PITCH_MAX, AIM_PITCH_MAX)
@@ -599,9 +634,9 @@ func _handle_aim(delta: float) -> void:
 			aim_pitch = 0.0
 		is_aiming = true
 		# Change facing direction while aiming
-		if (is_ai_controlled and _is_pressed("left")) or _is_just_pressed("left"):
+		if ((is_ai_controlled or is_network_controlled) and _is_pressed("left")) or _is_just_pressed("left"):
 			facing_direction = -1
-		elif (is_ai_controlled and _is_pressed("right")) or _is_just_pressed("right"):
+		elif ((is_ai_controlled or is_network_controlled) and _is_pressed("right")) or _is_just_pressed("right"):
 			facing_direction = 1
 		# Adjust pitch
 		var pitch_input := _get_axis("jump", "crouch")
@@ -621,6 +656,9 @@ func _handle_movement(_delta: float) -> void:
 
 	var direction := _get_axis("left", "right")
 	var speed_mult := current_gun.moving_speed_mult if current_gun else 1.0
+	# Apply melee weapon speed penalty (HEAVY weapons slow you down)
+	if current_melee and not current_gun:
+		speed_mult = current_melee.moving_speed_mult
 	if can_move_while_aiming:
 		speed_mult *= AIM_PISTOL_SPEED_MULT
 	if direction:
@@ -671,9 +709,14 @@ func _handle_attack() -> void:
 
 	elif _is_just_pressed("secondary"):
 		if current_melee:
+			var sec_cooldown := current_melee.get_secondary_cooldown()
+			# Apply combo speedup: if primary hit connected, secondary is faster
+			if _melee_combo_active:
+				sec_cooldown *= MELEE_COMBO_SPEEDUP
+				_melee_combo_active = false
 			_perform_melee_attack(2, current_melee.secondary_damage,
 				current_melee.secondary_knockback,
-				current_melee.get_secondary_cooldown(), current_melee.melee_range)
+				sec_cooldown, current_melee.melee_range)
 		else:
 			_perform_melee_attack(2, FIST_SECONDARY_DAMAGE, FIST_SECONDARY_KNOCKBACK,
 				SECONDARY_COOLDOWN, FIST_RANGE)
@@ -740,6 +783,15 @@ func _shoot() -> void:
 		bullet.speed = current_gun.velocity
 		bullet.damage = current_gun.damage
 		bullet.knockback = current_gun.knockback
+		bullet.gravity = current_gun.projectile_gravity
+		bullet.vertical_boost = current_gun.projectile_upward_boost
+		bullet.explosive_radius = current_gun.explosive_radius
+		bullet.spread_on_impact = current_gun.spread_on_impact
+		bullet.homing_turn_rate_deg = current_gun.projectile_homing_turn_rate
+		bullet.homing_range = current_gun.projectile_homing_range
+		bullet.homing_delay = current_gun.projectile_homing_delay
+		bullet.homing_fov_deg = current_gun.projectile_homing_fov
+		bullet.homing_duration = current_gun.projectile_homing_duration
 		bullet.owner_id = player_id
 		get_tree().current_scene.add_child(bullet)
 
@@ -1192,6 +1244,10 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	body.take_damage(dmg, kb, dir)
 	damage_dealt.emit(dmg)
 	AudioManager.play_sfx_varied("melee_hit", -2.5, 0.95, 1.07)
+	
+	# Melee combo: after successful hit with primary, secondary is faster
+	if attack_type == 1:
+		_melee_combo_active = true
 
 
 # --- Damage ---

@@ -18,3 +18,4 @@ mono_crash.*.json
 prdocs/
 
 *.exe
+*.x86_64

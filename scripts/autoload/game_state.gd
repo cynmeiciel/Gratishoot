@@ -6,6 +6,9 @@ const WINDOW_FULLSCREEN := 1
 const MODE_CLASSIC_DUEL := 0
 const MODE_TRAINING := 1
 const MODE_ARMS_DEALER := 2
+const MODE_DRAFT_DUEL := 3
+const MODE_ONLINE_HOST := 4
+const MODE_ONLINE_CLIENT := 5
 const DEFAULT_BINDINGS := {
 	"p1_left": KEY_A,
 	"p1_right": KEY_D,
@@ -42,6 +45,8 @@ var aim_assist_enabled: bool = true
 var key_bindings: Dictionary = {}
 var game_mode: int = MODE_CLASSIC_DUEL
 var p2_is_ai: bool = false
+var online_server_address: String = "127.0.0.1"
+var online_server_port: int = 28991
 
 
 func _ready() -> void:
@@ -71,6 +76,9 @@ func save_settings() -> void:
 	cfg.set_value("players", "p2_is_ai", p2_is_ai)
 	cfg.set_value("players", "p1_color", p1_color.to_html())
 	cfg.set_value("players", "p2_color", p2_color.to_html())
+	cfg.set_value("match", "game_mode", game_mode)
+	cfg.set_value("network", "server_address", online_server_address)
+	cfg.set_value("network", "server_port", online_server_port)
 	cfg.set_value("settings", "master_volume", master_volume)
 	cfg.set_value("settings", "window_mode", window_mode)
 	cfg.set_value("settings", "aim_assist_enabled", aim_assist_enabled)
@@ -85,6 +93,9 @@ func load_settings() -> void:
 		return
 
 	rounds_to_win = int(cfg.get_value("match", "rounds_to_win", rounds_to_win))
+	game_mode = int(cfg.get_value("match", "game_mode", game_mode))
+	online_server_address = String(cfg.get_value("network", "server_address", online_server_address))
+	online_server_port = int(cfg.get_value("network", "server_port", online_server_port))
 	p1_character = int(cfg.get_value("players", "p1_character", p1_character))
 	p2_character = int(cfg.get_value("players", "p2_character", p2_character))
 	p1_name = String(cfg.get_value("players", "p1_name", p1_name)).strip_edges()
@@ -102,6 +113,8 @@ func load_settings() -> void:
 
 	master_volume = clampf(master_volume, 0.0, 1.0)
 	rounds_to_win = maxi(1, mini(9, rounds_to_win))
+	game_mode = maxi(MODE_CLASSIC_DUEL, mini(MODE_ONLINE_CLIENT, game_mode))
+	online_server_port = clampi(online_server_port, 1024, 65535)
 	p1_character = maxi(0, mini(3, p1_character))
 	p2_character = maxi(0, mini(3, p2_character))
 	if p1_name == "":

@@ -377,7 +377,7 @@ custom_minimum_size = Vector2(0, 340)
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "[b]Core Controls[/b]\nAttack: fire / punch\nSecondary: aim gun\nReload: reload gun\nSprint: run faster (uses stamina)\nSkill: character ability\nItem: use tactical item\n\n[b]Throwables[/b]\nPress Item to enter throwable aim.\nAttack to throw. Reload toggles weak/strong throw.\nThrowables have charges.\n\n[b]Modes[/b]\nClassic Duel: standard arena rounds.\nArms Dealer: buy loadouts each round with credits.\nTraining: sandbox to practice movement and weapons.\n\n[b]Tips[/b]\n- Aim Assist only affects DMR/Sniper when enabled in Settings.\n- While crouching, aiming is disabled.\n- Press Esc in keybind remap to cancel."
+text = "[b]Core Controls[/b]\nAttack: fire / punch\nSecondary: aim gun\nReload: reload gun\nSprint: run faster (uses stamina)\nSkill: character ability\nItem: use tactical item\n\n[b]Throwables[/b]\nPress Item to enter throwable aim.\nAttack to throw. Reload toggles weak/strong throw.\nThrowables have charges.\n\n[b]Modes[/b]\nClassic Duel: standard arena rounds.\nArms Dealer: buy loadouts each round with credits.\nDraft Duel: no random spawns, draft a constrained weapon each round.\nTraining: sandbox to practice movement and weapons.\n\n[b]Tips[/b]\n- Aim Assist only affects DMR/Sniper when enabled in Settings.\n- While crouching, aiming is disabled.\n- Press Esc in keybind remap to cancel."
 
 [node name="BackFromHelpButton" type="Button" parent="HelpPanel/Margin/VBox"]
 layout_mode = 2

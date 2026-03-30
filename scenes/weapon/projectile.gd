@@ -6,15 +6,27 @@ var speed := 800.0
 var damage := 10.0
 var knockback := 150.0
 var owner_id: int = -1
+#var gravity := 0.0
+var vertical_boost := 0.0
+var explosive_radius := 0.0
+var spread_on_impact := false
+var homing_turn_rate_deg := 0.0
+var homing_range := 0.0
+var homing_delay := 0.0
+var homing_fov_deg := 0.0
+var homing_duration := 0.0
+var split_generation := 0  # prevent infinite recursion
 var main_color: Color = Color(1.0, 0.78, 0.22, 1.0)
 var accent_color: Color = Color(1.0, 0.95, 0.75, 1.0)
 
 var _start_position: Vector2
 var _life_time := 0.0
+var _velocity := Vector2.ZERO
 var _trail_points: PackedVector2Array = PackedVector2Array()
 var _has_hit := false
+var _homing_target: CharacterBody2D = null
 const DAMAGE_FALLOFF_RATE := 0.85  # fraction of damage lost per second in flight
-const MAX_DISTANCE := 10000.0
+const MAX_DISTANCE := 5000.0
 const TRAIL_POINTS_MAX := 10
 
 
@@ -26,6 +38,9 @@ func apply_rarity_color(rarity_color: Color) -> void:
 func _ready() -> void:
 	add_to_group("projectiles")
 	_start_position = global_position
+	_velocity = direction.normalized() * speed + Vector2(0.0, vertical_boost)
+	if _velocity.length() > 0.0:
+		direction = _velocity.normalized()
 	_trail_points.append(global_position)
 
 
@@ -33,8 +48,12 @@ func _physics_process(delta: float) -> void:
 	if _has_hit:
 		return
 	_life_time += delta
+	_update_homing(delta)
 	var from := global_position
-	var to := from + direction * speed * delta
+	_velocity.y += gravity * delta
+	var to := from + _velocity * delta
+	if _velocity.length() > 0.0:
+		direction = _velocity.normalized()
 
 	# Sweep test prevents high-speed bullets from tunneling through targets.
 	var query := PhysicsRayQueryParameters2D.create(from, to)
@@ -49,7 +68,7 @@ func _physics_process(delta: float) -> void:
 	var hit := get_world_2d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
 		global_position = hit.position
-		if _apply_hit(hit.collider, hit.position):
+		if _apply_hit(hit.collider, hit.position, hit.normal):
 			_has_hit = true
 			queue_free()
 			return
@@ -64,9 +83,85 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-func _apply_hit(body: Node2D, hit_position: Vector2) -> bool:
+func _update_homing(delta: float) -> void:
+	if homing_turn_rate_deg <= 0.0 or homing_range <= 0.0:
+		return
+	if _life_time < homing_delay:
+		return
+
+	# Re-evaluate target continuously for stronger, responsive homing.
+	_homing_target = _find_homing_target()
+	if _homing_target == null:
+		return
+
+	var target_center := _homing_target.global_position + Vector2(0.0, -32.0)
+	var to_target := target_center - global_position
+	var dist := to_target.length()
+	if dist <= 0.001 or dist > homing_range:
+		_homing_target = null
+		return
+
+	var cur_dir := _velocity.normalized() if _velocity.length() > 0.0 else direction.normalized()
+	var desired_dir := to_target / dist
+	var max_turn := deg_to_rad(homing_turn_rate_deg) * delta
+	var turn := clampf(cur_dir.angle_to(desired_dir), -max_turn, max_turn)
+	var new_dir := cur_dir.rotated(turn).normalized()
+	var mag := _velocity.length()
+	if mag <= 0.0:
+		mag = speed
+	_velocity = new_dir * mag
+	direction = new_dir
+
+
+func _find_homing_target() -> CharacterBody2D:
+	var cur_dir := _velocity.normalized() if _velocity.length() > 0.0 else direction.normalized()
+	var fov_cos := cos(deg_to_rad(homing_fov_deg))
+	var best: CharacterBody2D = null
+	var best_dist := homing_range
+
+	for node in get_tree().get_nodes_in_group("players"):
+		var p := node as CharacterBody2D
+		if p == null or p.player_id == owner_id or p.is_dead:
+			continue
+		var aim_point := p.global_position + Vector2(0.0, -32.0)
+		var to_target := aim_point - global_position
+		var dist := to_target.length()
+		if dist <= 0.001 or dist > homing_range:
+			continue
+		var dir_to_target := to_target / dist
+		if cur_dir.dot(dir_to_target) < fov_cos:
+			continue
+
+		# Require line of sight for lock so cover can break homing.
+		var query := PhysicsRayQueryParameters2D.create(global_position, aim_point)
+		query.collide_with_areas = false
+		query.collide_with_bodies = true
+		query.collision_mask = collision_mask
+		query.exclude = [self]
+		for other in get_tree().get_nodes_in_group("players"):
+			if other.player_id == owner_id:
+				query.exclude.append(other)
+		var hit := get_world_2d().direct_space_state.intersect_ray(query)
+		if not hit.is_empty() and hit.collider != p:
+			continue
+
+		if dist < best_dist:
+			best_dist = dist
+			best = p
+
+	return best
+
+
+func _apply_hit(body: Node2D, hit_position: Vector2, hit_normal: Vector2 = Vector2.ZERO) -> bool:
 	if _has_hit:
 		return false
+	if explosive_radius > 0.0:
+		_explode(hit_position)
+		return true
+	# Spread on impact: split into 3 projectiles on wall/floor hit (not on players)
+	if spread_on_impact and split_generation < 1 and body is StaticBody2D:
+		_split_on_impact(hit_position, hit_normal)
+		return true
 	if body is CharacterBody2D and body.has_method("take_damage"):
 		if body.player_id == owner_id:
 			return false
@@ -81,6 +176,81 @@ func _apply_hit(body: Node2D, hit_position: Vector2) -> bool:
 				break
 	_spawn_impact_fx(hit_position)
 	return true
+
+
+func _explode(hit_position: Vector2) -> void:
+	var any_hit := false
+	for body in get_tree().get_nodes_in_group("players"):
+		if not (body is CharacterBody2D) or not body.has_method("take_damage"):
+			continue
+		if body.player_id == owner_id:
+			continue
+		var target_center: Vector2 = body.global_position + Vector2(0.0, -32.0)
+		var dist := hit_position.distance_to(target_center)
+		if dist > explosive_radius:
+			continue
+		var falloff := _calculate_explosive_falloff(dist, explosive_radius)
+		if falloff <= 0.0:
+			continue
+		var dir_sign := 1 if body.global_position.x >= hit_position.x else -1
+		if is_equal_approx(body.global_position.x, hit_position.x):
+			dir_sign = 1 if direction.x >= 0.0 else -1
+		var actual_damage := damage * falloff
+		var actual_knockback := knockback * falloff
+		body.take_damage(actual_damage, actual_knockback, dir_sign)
+		any_hit = true
+		for p in body.get_tree().get_nodes_in_group("players"):
+			if p.player_id == owner_id:
+				p.damage_dealt.emit(actual_damage)
+				break
+	# Always show explosion for explosive weapons, regardless of hits
+	_spawn_explosion_fx(hit_position)
+
+
+func _calculate_explosive_falloff(distance: float, radius: float) -> float:
+	var normalized_dist := clampf(distance / radius, 0.0, 1.0)
+	return 1.0 - normalized_dist * normalized_dist
+
+
+func _split_on_impact(hit_position: Vector2, hit_normal: Vector2) -> void:
+	"""Split projectiles based on reflected heading and collision tangent.
+	This is symmetric on left/right collisions and consistent on any surface normal."""
+	var incoming := _velocity.normalized() if _velocity.length() > 0.0 else direction.normalized()
+	var normal := hit_normal.normalized()
+	if normal == Vector2.ZERO:
+		normal = -incoming
+
+	# Main reflected direction from surface.
+	var reflected := incoming.bounce(normal).normalized()
+	# Surface tangent to build mirrored side shots around the reflected path.
+	var tangent := Vector2(-normal.y, normal.x).normalized()
+	var side_blend := 0.55
+	var spread_directions := [
+		reflected,
+		(reflected + tangent * side_blend).normalized(),
+		(reflected - tangent * side_blend).normalized(),
+	]
+
+	# Spawn slightly away from collision point to avoid immediate re-collision with the same wall.
+	var spawn_pos := hit_position + normal * 2.0
+
+	for spread_dir in spread_directions:
+		var child: Area2D = _projectile_scene.instantiate()
+		child.global_position = spawn_pos
+		child.call("apply_rarity_color", main_color)
+		
+		child.direction = spread_dir.normalized()
+		child.speed = speed * 0.7  # Reduced speed for splits
+		child.damage = damage * 0.65  # Reduced damage for splits
+		child.knockback = knockback * 0.65
+		child.explosive_radius = explosive_radius
+		child.spread_on_impact = spread_on_impact
+		child.split_generation = split_generation + 1
+		child.owner_id = owner_id
+		get_tree().current_scene.add_child(child)
+
+
+var _projectile_scene := preload("res://scenes/weapon/projectile.tscn")
 
 
 func _draw() -> void:
@@ -142,6 +312,36 @@ func _spawn_impact_fx(hit_position: Vector2) -> void:
 	mat.scale_max = 1.25
 	mat.color = main_color.lerp(accent_color, 0.35)
 	mat.gravity = Vector3.ZERO
+	fx.process_material = mat
+
+	get_tree().current_scene.add_child(fx)
+	fx.finished.connect(func() -> void:
+		fx.queue_free()
+	)
+
+
+func _spawn_explosion_fx(hit_position: Vector2) -> void:
+	AudioManager.play_sfx_2d("bullet_impact", hit_position, -1.0, randf_range(0.80, 0.95))
+	var fx := GPUParticles2D.new()
+	fx.position = hit_position
+	fx.one_shot = true
+	fx.emitting = true
+	fx.explosiveness = 1.0
+	fx.amount = 72  # Increased from 40
+	fx.lifetime = 0.42  # Increased from 0.28
+	fx.local_coords = false
+	fx.z_index = 24
+
+	var mat := ParticleProcessMaterial.new()
+	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	mat.emission_sphere_radius = 3.5  # Increased from 2.0
+	mat.spread = 180.0
+	mat.initial_velocity_min = 240.0  # Increased from 180.0
+	mat.initial_velocity_max = 520.0  # Increased from 420.0
+	mat.scale_min = 1.1  # Increased from 0.8
+	mat.scale_max = 2.2  # Increased from 1.7
+	mat.color = main_color.lerp(Color(1.0, 0.72, 0.22), 0.55)
+	mat.gravity = Vector3(0.0, 60.0, 0.0)  # Slightly reduced gravity for longer hang time
 	fx.process_material = mat
 
 	get_tree().current_scene.add_child(fx)

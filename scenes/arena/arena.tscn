@@ -43,7 +43,7 @@ position_smoothing_speed = 6.0
 script = ExtResource("4_camera")
 
 [node name="Ceil" type="StaticBody2D" parent="."]
-position = Vector2(1700, -274)
+position = Vector2(1700, -597)
 collision_mask = 0
 
 [node name="Collision" type="CollisionShape2D" parent="Ceil"]
@@ -55,6 +55,7 @@ offset_top = -20.0
 offset_right = 1700.0
 offset_bottom = 20.0
 color = Color(0.3, 0.3, 0.3, 1)
+metadata/_edit_use_anchors_ = true
 
 [node name="Ground" type="StaticBody2D" parent="."]
 position = Vector2(1700, 980)
@@ -158,15 +159,16 @@ offset_bottom = 48.0
 color = Color(0.36, 0.43, 0.5, 1)
 
 [node name="WallLeft" type="StaticBody2D" parent="."]
-position = Vector2(-10, 560)
+position = Vector2(-10, 264)
 collision_mask = 0
 
 [node name="Collision" type="CollisionShape2D" parent="WallLeft"]
 position = Vector2(0, -161.5)
+scale = Vector2(1, 1.16)
 shape = SubResource("SubResource_wall")
 
 [node name="WallRight" type="StaticBody2D" parent="."]
-position = Vector2(3410, 560)
+position = Vector2(3410, 218)
 collision_mask = 0
 
 [node name="Collision" type="CollisionShape2D" parent="WallRight"]

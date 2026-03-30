@@ -135,7 +135,8 @@ func _update_player_panel(p: CharacterBody2D, is_left: bool) -> void:
 			WeaponData.GunCategory.LMG: "LMG",
 			WeaponData.GunCategory.BATTLE_RIFLE: "BR",
 			WeaponData.GunCategory.DMR: "DMR",
-			WeaponData.GunCategory.SNIPER: "Sniper"
+			WeaponData.GunCategory.SNIPER: "Sniper",
+			WeaponData.GunCategory.LAUNCHER: "Launcher"
 		}
 		gun_category = category_names.get(p.current_gun.gun_category, "")
 		var mode_names := {

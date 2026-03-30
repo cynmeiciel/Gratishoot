@@ -3,7 +3,7 @@ extends Resource
 
 enum Type { MELEE, GUN }
 enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC, CONTRABAND }
-enum GunCategory { NONE, PISTOL, ASSAULT_RIFLE, BATTLE_RIFLE, SMG, LMG, SHOTGUN, SNIPER, DMR }
+enum GunCategory { NONE, PISTOL, ASSAULT_RIFLE, BATTLE_RIFLE, SMG, LMG, SHOTGUN, SNIPER, DMR, LAUNCHER }
 enum FireMode { SINGLE, BURST, AUTO }
 enum MeleeStyle { THRUST, SWEEP, HEAVY }
 
@@ -35,6 +35,15 @@ enum MeleeStyle { THRUST, SWEEP, HEAVY }
 
 # Gun stats
 @export var velocity: float = 800.0          # projectile speed (px/s)
+@export var projectile_gravity: float = 0.0  # downward accel for ballistic projectiles (px/s^2)
+@export var projectile_upward_boost: float = 0.0  # initial vertical velocity offset (negative = up)
+@export var explosive_radius: float = 0.0    # >0 enables explosive AoE on impact
+@export var spread_on_impact: bool = false   # if true, splits into 3 projectiles on wall hit
+@export var projectile_homing_turn_rate: float = 0.0  # deg/sec, 0 disables homing
+@export var projectile_homing_range: float = 0.0      # max lock distance in px
+@export var projectile_homing_delay: float = 0.0      # time before seeking starts
+@export var projectile_homing_fov: float = 0.0        # lock cone half-angle in degrees
+@export var projectile_homing_duration: float = 0.0   # max seconds spent seeking
 @export var spread: float = 2.0              # random shot angle in degrees (+/-)
 @export var recoil: float = 30.0             # backward push on player
 @export var recoil_kick: float = 0.05        # aim pitch rise per shot (radians)

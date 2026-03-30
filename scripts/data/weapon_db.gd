@@ -29,35 +29,35 @@ static func get_pool_by_rarity(rarity: WeaponData.Rarity) -> Array[WeaponData]:
 static func _build_pool() -> void:
 	# --- MELEE ---
 	_add_melee({ "name": "Kitchen Knife",  "rarity": WeaponData.Rarity.COMMON,
-		"dmg": 12,  "rate": 3.0, "kb": 180, "sec_dmg": 18, "sec_kb": 300, "sec_rate": 1.5,
-		"range": 52.0, "equip": 0.20, "style": WeaponData.MeleeStyle.THRUST,
-		"lunge1": 55.0, "lunge2": 88.0, "hitbox_y": -32.0, "sec_y": -2.0,
-		"vis1": 0.10, "vis2": 0.13, "thickness": 2.4 })
+		"dmg": 12,  "rate": 4.0, "kb": 160, "sec_dmg": 16, "sec_kb": 260, "sec_rate": 3.2,
+		"range": 45.0, "equip": 0.15, "style": WeaponData.MeleeStyle.THRUST,
+		"lunge1": 25.0, "lunge2": 35.0, "hitbox_y": -32.0, "sec_y": -2.0,
+		"vis1": 0.08, "vis2": 0.10, "thickness": 2.2, "speed": 1.05 })
 	_add_melee({ "name": "Bayonet",         "rarity": WeaponData.Rarity.UNCOMMON,
-		"dmg": 16,  "rate": 2.5, "kb": 220, "sec_dmg": 22, "sec_kb": 350, "sec_rate": 1.3,
-		"range": 62.0, "equip": 0.20, "style": WeaponData.MeleeStyle.THRUST,
-		"lunge1": 65.0, "lunge2": 105.0, "hitbox_y": -33.0, "sec_y": -2.0,
-		"vis1": 0.11, "vis2": 0.15, "thickness": 2.8 })
+		"dmg": 16,  "rate": 3.3, "kb": 200, "sec_dmg": 20, "sec_kb": 320, "sec_rate": 2.2,
+		"range": 55.0, "equip": 0.18, "style": WeaponData.MeleeStyle.THRUST,
+		"lunge1": 35.0, "lunge2": 55.0, "hitbox_y": -33.0, "sec_y": -2.0,
+		"vis1": 0.09, "vis2": 0.12, "thickness": 2.6, "speed": 1.02 })
 	_add_melee({ "name": "Hook",            "rarity": WeaponData.Rarity.RARE,
-		"dmg": 20, "rate": 2.2, "kb": 280, "sec_dmg": 30, "sec_kb": 420, "sec_rate": 1.0,
-		"range": 58.0, "equip": 0.25, "style": WeaponData.MeleeStyle.SWEEP,
-		"lunge1": 42.0, "lunge2": 72.0, "hitbox_y": -29.0, "sec_y": 2.0,
-		"vis1": 0.12, "vis2": 0.16, "thickness": 3.0 })
+		"dmg": 20, "rate": 2.2, "kb": 290, "sec_dmg": 28, "sec_kb": 400, "sec_rate": 1.5,
+		"range": 60.0, "equip": 0.22, "style": WeaponData.MeleeStyle.SWEEP,
+		"lunge1": 48.0, "lunge2": 75.0, "hitbox_y": -29.0, "sec_y": 0.0,
+		"vis1": 0.12, "vis2": 0.16, "thickness": 3.1, "speed": 1.0 })
 	_add_melee({ "name": "Morning Star",    "rarity": WeaponData.Rarity.EPIC,
-		"dmg": 40,  "rate": 1.2, "kb": 350, "sec_dmg": 38, "sec_kb": 500, "sec_rate": 0.8,
-		"range": 64.0, "speed": 0.85, "equip": 0.30, "style": WeaponData.MeleeStyle.HEAVY,
-		"lunge1": 28.0, "lunge2": 58.0, "hitbox_y": -34.0, "sec_y": -10.0,
-		"vis1": 0.16, "vis2": 0.22, "thickness": 4.2 })
+		"dmg": 40,  "rate": 1.1, "kb": 400, "sec_dmg": 36, "sec_kb": 550, "sec_rate": 0.65,
+		"range": 68.0, "speed": 0.80, "equip": 0.35, "style": WeaponData.MeleeStyle.HEAVY,
+		"lunge1": 45.0, "lunge2": 85.0, "hitbox_y": -34.0, "sec_y": -12.0,
+		"vis1": 0.16, "vis2": 0.24, "thickness": 4.4 })
 	_add_melee({ "name": "Butterfly Knife", "rarity": WeaponData.Rarity.LEGENDARY,
-		"dmg": 35,  "rate": 2.5, "kb": 300, "sec_dmg": 45, "sec_kb": 450, "sec_rate": 2.0,
-		"range": 50.0, "equip": 0.15, "style": WeaponData.MeleeStyle.SWEEP,
-		"lunge1": 70.0, "lunge2": 115.0, "hitbox_y": -31.0, "sec_y": -2.0,
-		"vis1": 0.10, "vis2": 0.14, "thickness": 3.0 })
+		"dmg": 35,  "rate": 2.8, "kb": 310, "sec_dmg": 42, "sec_kb": 430, "sec_rate": 2.4,
+		"range": 56.0, "equip": 0.12, "style": WeaponData.MeleeStyle.SWEEP,
+		"lunge1": 55.0, "lunge2": 92.0, "hitbox_y": -31.0, "sec_y": -1.0,
+		"vis1": 0.10, "vis2": 0.13, "thickness": 2.9, "speed": 1.04 })
 	_add_melee({ "name": "Longsword",       "rarity": WeaponData.Rarity.MYTHIC,
-		"dmg": 45,  "rate": 1.4, "kb": 450, "sec_dmg": 55, "sec_kb": 600, "sec_rate": 0.8,
-		"range": 76.0, "speed": 0.8, "equip": 0.40, "style": WeaponData.MeleeStyle.HEAVY,
-		"lunge1": 36.0, "lunge2": 70.0, "hitbox_y": -34.0, "sec_y": -12.0,
-		"vis1": 0.17, "vis2": 0.24, "thickness": 4.6 })
+		"dmg": 45,  "rate": 1.2, "kb": 480, "sec_dmg": 52, "sec_kb": 620, "sec_rate": 0.6,
+		"range": 78.0, "speed": 0.77, "equip": 0.42, "style": WeaponData.MeleeStyle.HEAVY,
+		"lunge1": 55.0, "lunge2": 95.0, "hitbox_y": -34.0, "sec_y": -14.0,
+		"vis1": 0.17, "vis2": 0.26, "thickness": 4.8 })
 
 	# --- PISTOL ---
 	_add_gun({ "name": "M9",           "rarity": WeaponData.Rarity.COMMON,  "cat": WeaponData.GunCategory.PISTOL,
@@ -171,11 +171,12 @@ static func _build_pool() -> void:
 		"sfx": "gun_tar_21",
 		"mode": WeaponData.FireMode.AUTO,  "equip": 0.35 })
 	_add_gun({ "name": "VX-Null Carbine", "rarity": WeaponData.Rarity.CONTRABAND, "cat": WeaponData.GunCategory.ASSAULT_RIFLE,
-		"dmg": 38,  "rate": 16.8, "kb": 300, "vel": 4600,
-		"rec": 30,  "kick": 0.04,  "reload": 1.1,  "cap": 45, "reserve": 180, "speed": 0.98,
-		"spread": 1.1,
+		"dmg": 20,  "rate": 13.2, "kb": 280, "vel": 3800,
+		"rec": 28,  "kick": 0.035, "reload": 1.4,  "cap": 30, "reserve": 90, "speed": 0.96,
+		"spread": 1.3,
 		"sfx": "gun_vx_null_carbine",
-		"mode": WeaponData.FireMode.AUTO, "equip": 0.24 })
+		"mode": WeaponData.FireMode.AUTO, "equip": 0.30,
+		"split": true })
 
 	# --- BATTLE RIFLE ---
 	_add_gun({ "name": "M14",       "rarity": WeaponData.Rarity.EPIC,      "cat": WeaponData.GunCategory.BATTLE_RIFLE,
@@ -618,6 +619,30 @@ static func _build_pool() -> void:
 		"spread": 0.45, "sfx": "gun_l1a1_slr",
 		"mode": WeaponData.FireMode.SINGLE, "equip": 0.43 })
 
+	# --- OTHER (EXPLOSIVE LAUNCHERS) ---
+	# M79 uses a ballistic arc, but launches harder and faster than thrown tacticals.
+	_add_gun({ "name": "M79 Thumper", "rarity": WeaponData.Rarity.MYTHIC, "cat": WeaponData.GunCategory.LAUNCHER,
+		"dmg": 120, "rate": 0.95, "kb": 640, "vel": 1850,
+		"rec": 145, "kick": 0.17, "reload": 2.1, "cap": 1, "reserve": 10, "speed": 0.78,
+		"spread": 0.45, "sfx": "gun_m79_thumper",
+		"mode": WeaponData.FireMode.SINGLE, "equip": 0.55,
+		"exp_radius": 190.0, "grav": 1980.0, "up_boost": -220.0 })
+	# RPG-7 flies in a mostly normal trajectory (minimal drop) and explodes on impact.
+	_add_gun({ "name": "RPG-7", "rarity": WeaponData.Rarity.MYTHIC, "cat": WeaponData.GunCategory.LAUNCHER,
+		"dmg": 135, "rate": 0.72, "kb": 760, "vel": 1500,
+		"rec": 565, "kick": 2.0, "reload": 4.1, "cap": 1, "reserve": 4, "speed": 0.5,
+		"spread": 0.22, "sfx": "gun_rpg_7",
+		"mode": WeaponData.FireMode.SINGLE, "equip": 0.62,
+		"exp_radius": 210.0, "grav": 120.0, "up_boost": 0.0 })
+	# Homing launcher with intentionally limited steering, short lock window, and narrow cone.
+	_add_gun({ "name": "MML-8 Hound", "rarity": WeaponData.Rarity.LEGENDARY, "cat": WeaponData.GunCategory.LAUNCHER,
+		"dmg": 95, "rate": 3.16, "kb": 610, "vel": 550,
+		"rec": 220, "kick": 0.45, "reload": 2.9, "cap": 2, "reserve": 10, "speed": 0.64,
+		"spread": 0.5, "sfx": "gun_mml_8_hound",
+		"mode": WeaponData.FireMode.SINGLE, "equip": 0.54,
+		"exp_radius": 155.0, "grav": 85.0, "up_boost": -16.0,
+		"home_turn": 160.0, "home_range": 1500.0, "home_delay": 0.06, "home_fov": 72.0, "home_time": 0.0 })
+
 
 static func _add_melee(p: Dictionary) -> void:
 	var w := WeaponData.new()
@@ -662,6 +687,15 @@ static func _add_gun(p: Dictionary) -> void:
 	w.capacity          = p.get("cap",       30)
 	w.reserve_ammo      = p.get("reserve",   90)
 	w.pellets           = p.get("pellets",    1)
+	w.explosive_radius  = p.get("exp_radius", 0.0)
+	w.projectile_gravity = p.get("grav", 0.0)
+	w.projectile_upward_boost = p.get("up_boost", 0.0)
+	w.spread_on_impact  = p.get("split", false)
+	w.projectile_homing_turn_rate = p.get("home_turn", 0.0)
+	w.projectile_homing_range = p.get("home_range", 0.0)
+	w.projectile_homing_delay = p.get("home_delay", 0.0)
+	w.projectile_homing_fov = p.get("home_fov", 0.0)
+	w.projectile_homing_duration = p.get("home_time", 0.0)
 	w.moving_speed_mult = p.get("speed",     1.0)
 	w.fire_mode         = p.get("mode",  WeaponData.FireMode.SINGLE)
 	w.burst_count       = p.get("burst",      3)

@@ -124,23 +124,41 @@ func set_equipped(player_id: int, text: String) -> void:
 		(_equipped_labels[player_id] as Label).text = "Equipped: %s" % text
 
 
-func set_offers(player_id: int, offers: Array) -> void:
+func set_offers(player_id: int, offers: Array, selected_index: int = 0, columns: int = 2) -> void:
 	if not _offer_boxes.has(player_id):
 		return
-	var box: VBoxContainer = _offer_boxes[player_id]
-	for c in box.get_children():
-		c.queue_free()
+	var view: RichTextLabel = _offer_boxes[player_id]
+	if offers.is_empty():
+		view.text = "[center]No offers[/center]"
+		return
+
+	var cols := maxi(1, columns)
+	var rows := int(ceil(float(offers.size()) / float(cols)))
+	var safe_selected := clampi(selected_index, 0, offers.size() - 1)
+	var cells: Array[String] = []
 	for i in offers.size():
 		var offer = offers[i]
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(0, 38)
-		btn.text = "[%d] %s (%s)" % [int(offer["price"]), String(offer["name"]), String(offer["kind"]).capitalize()]
+		var marker := "[>]" if i == safe_selected else "   "
+		var hex := "FFFFFF"
 		if offer.has("color"):
-			btn.modulate = Color(offer["color"])
-		btn.pressed.connect(func() -> void:
-			buy_requested.emit(player_id, i)
-		)
-		box.add_child(btn)
+			hex = Color(offer["color"]).to_html(false)
+		var label := "%s [color=#%s]%s[/color] (%s) [$%d]" % [
+			marker,
+			hex,
+			String(offer["name"]),
+			String(offer["kind"]).capitalize(),
+			int(offer["price"]),
+		]
+		cells.append(label)
+
+	var lines: PackedStringArray = []
+	for row in rows:
+		var parts: PackedStringArray = []
+		for col in cols:
+			var idx := row * cols + col
+			parts.append(cells[idx] if idx < cells.size() else " ")
+		lines.append("| %s |" % " | ".join(parts))
+	view.text = "[center]%s[/center]" % "\n".join(lines)
 
 
 func _create_player_panel(parent: Control, player_id: int, player_name: String) -> void:
@@ -182,9 +200,13 @@ func _create_player_panel(parent: Control, player_id: int, player_name: String) 
 	offers_title.add_theme_font_size_override("font_size", 16)
 	v.add_child(offers_title)
 
-	var offers_box := VBoxContainer.new()
+	var offers_box := RichTextLabel.new()
+	offers_box.bbcode_enabled = true
+	offers_box.scroll_active = true
+	offers_box.fit_content = false
+	offers_box.custom_minimum_size = Vector2(0, 300)
 	offers_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	offers_box.add_theme_constant_override("separation", 5)
+	offers_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	v.add_child(offers_box)
 
 	var controls := HBoxContainer.new()
