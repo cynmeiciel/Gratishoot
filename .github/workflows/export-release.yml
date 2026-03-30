@@ -30,20 +30,20 @@ jobs:
           wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION_DIR}_linux.x86_64.zip" -O godot.zip
           wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION_DIR}_export_templates.tpz" -O templates.tpz
 
-          unzip -q godot.zip -d godot
+          unzip -q godot.zip
           unzip -q templates.tpz -d templates
 
           cp -r templates/templates/* "$HOME/.local/share/godot/export_templates/${GODOT_VERSION_DIR}/"
 
-          chmod +x godot/Godot_v${GODOT_VERSION}_linux.x86_64
+          chmod +x "Godot_v${GODOT_VERSION_DIR}_linux.x86_64"
 
       - name: Export Windows and Linux executables
         run: |
           set -euo pipefail
           mkdir -p build
 
-          godot/Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . --export-release "Windows Desktop" "build/Gratishoot.exe"
-          godot/Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . --export-release "Linux" "build/Gratishoot.x86_64"
+          "Godot_v${GODOT_VERSION_DIR}_linux.x86_64" --headless --path . --export-release "Windows Desktop" "build/Gratishoot.exe"
+          "Godot_v${GODOT_VERSION_DIR}_linux.x86_64" --headless --path . --export-release "Linux" "build/Gratishoot.x86_64"
 
           chmod +x build/Gratishoot.x86_64
 
