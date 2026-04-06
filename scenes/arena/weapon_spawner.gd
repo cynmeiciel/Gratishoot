@@ -14,7 +14,19 @@ var _tactical_pickup_scene: PackedScene = preload("res://scenes/tactical/tactica
 
 
 func _ready() -> void:
+	_apply_classic_spawn_settings()
 	_next_spawn = randf_range(spawn_interval_min, spawn_interval_max)
+
+
+func _apply_classic_spawn_settings() -> void:
+	if GameState.game_mode != GameState.MODE_CLASSIC_DUEL:
+		return
+	spawn_interval_min = GameState.classic_spawn_interval_min
+	spawn_interval_max = GameState.classic_spawn_interval_max
+	if spawn_interval_max < spawn_interval_min:
+		spawn_interval_max = spawn_interval_min
+	tactical_chance = GameState.classic_tactical_chance
+	max_weapons_on_map = GameState.classic_max_pickups
 
 
 func _process(delta: float) -> void:
@@ -39,6 +51,12 @@ func _try_spawn() -> void:
 	if existing >= max_weapons_on_map and not has_existing:
 		return
 
+	var use_classic_filter := GameState.game_mode == GameState.MODE_CLASSIC_DUEL
+	var force_tactical_only := use_classic_filter and GameState.classic_use_weapon_filter and GameState.classic_enabled_weapons.is_empty()
+	if force_tactical_only:
+		_spawn_tactical(point)
+		return
+
 	if randf() < tactical_chance:
 		_spawn_tactical(point)
 	else:
@@ -46,7 +64,17 @@ func _try_spawn() -> void:
 
 
 func _spawn_weapon(point: Marker2D) -> void:
-	var pool := WeaponDB.get_pool()
+	var pool: Array[WeaponData] = []
+	var use_classic_filter := GameState.game_mode == GameState.MODE_CLASSIC_DUEL
+	for w in WeaponDB.get_pool():
+		if not use_classic_filter or GameState.is_classic_weapon_allowed(w.weapon_name):
+			pool.append(w)
+	if pool.is_empty():
+		# Respect intentional "no weapons" selection in Classic filter mode.
+		if use_classic_filter and GameState.classic_use_weapon_filter and GameState.classic_enabled_weapons.is_empty():
+			return
+		# Safety fallback: if user filter gets invalid/outdated names, allow default pool.
+		pool = WeaponDB.get_pool()
 	if pool.is_empty():
 		return
 	var weapon := _pick_weighted(pool)
@@ -58,8 +86,15 @@ func _spawn_weapon(point: Marker2D) -> void:
 
 
 func _spawn_tactical(point: Marker2D) -> void:
-	var all_tacticals := TacticalData.get_all_tacticals()
-	var tac: TacticalData = all_tacticals[randi() % all_tacticals.size()]
+	var allowed_tacticals: Array[TacticalData] = []
+	var use_classic_filter := GameState.game_mode == GameState.MODE_CLASSIC_DUEL
+	for tac in TacticalData.get_all_tacticals():
+		if not use_classic_filter or GameState.is_classic_tactical_allowed(tac.item_name):
+			allowed_tacticals.append(tac)
+	if allowed_tacticals.is_empty():
+		_spawn_weapon(point)
+		return
+	var tac: TacticalData = allowed_tacticals[randi() % allowed_tacticals.size()]
 	var pickup: Area2D = _tactical_pickup_scene.instantiate()
 	pickup.global_position = _randomized_spawn_position(point)
 	pickup.add_to_group("tactical_pickups")

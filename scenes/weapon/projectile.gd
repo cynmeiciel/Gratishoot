@@ -28,6 +28,9 @@ var _homing_target: CharacterBody2D = null
 const DAMAGE_FALLOFF_RATE := 0.85  # fraction of damage lost per second in flight
 const MAX_DISTANCE := 5000.0
 const TRAIL_POINTS_MAX := 10
+const PLAYER_HIT_PADDING := 4.0
+const PLAYER_LAYER_MASK := 4
+var _projectile_radius := 3.0
 
 
 func apply_rarity_color(rarity_color: Color) -> void:
@@ -38,6 +41,9 @@ func apply_rarity_color(rarity_color: Color) -> void:
 func _ready() -> void:
 	add_to_group("projectiles")
 	_start_position = global_position
+	var shape_node := get_node_or_null("Shape") as CollisionShape2D
+	if shape_node and shape_node.shape is CircleShape2D:
+		_projectile_radius = (shape_node.shape as CircleShape2D).radius
 	_velocity = direction.normalized() * speed + Vector2(0.0, vertical_boost)
 	if _velocity.length() > 0.0:
 		direction = _velocity.normalized()
@@ -59,13 +65,16 @@ func _physics_process(delta: float) -> void:
 	var query := PhysicsRayQueryParameters2D.create(from, to)
 	query.collide_with_areas = false
 	query.collide_with_bodies = true
+	query.hit_from_inside = true
 	query.collision_mask = collision_mask
 	query.exclude = [self]
 	for p in get_tree().get_nodes_in_group("players"):
 		if p.player_id == owner_id:
 			query.exclude.append(p)
 
-	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+	var ray_hit := get_world_2d().direct_space_state.intersect_ray(query)
+	var player_hit := _find_player_sweep_hit(from, to)
+	var hit := _pick_nearest_hit(from, ray_hit, player_hit)
 	if not hit.is_empty():
 		global_position = hit.position
 		if _apply_hit(hit.collider, hit.position, hit.normal):
@@ -81,6 +90,72 @@ func _physics_process(delta: float) -> void:
 	var dist := global_position.distance_to(_start_position)
 	if dist > MAX_DISTANCE:
 		queue_free()
+
+
+func _find_player_sweep_hit(from: Vector2, to: Vector2) -> Dictionary:
+	var motion := to - from
+	if motion.length_squared() <= 0.0001:
+		return {}
+
+	var shape := CircleShape2D.new()
+	shape.radius = _projectile_radius + PLAYER_HIT_PADDING
+
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.shape = shape
+	params.transform = Transform2D(0.0, from)
+	params.motion = motion
+	params.collide_with_areas = false
+	params.collide_with_bodies = true
+	params.collision_mask = PLAYER_LAYER_MASK
+	params.exclude = [self]
+	for p in get_tree().get_nodes_in_group("players"):
+		if p.player_id == owner_id:
+			params.exclude.append(p)
+
+	var results := get_world_2d().direct_space_state.intersect_shape(params, 8)
+	if results.is_empty():
+		return {}
+
+	var best_hit := {}
+	var best_dist := INF
+	for result in results:
+		var p := result.collider as CharacterBody2D
+		if p == null or p.player_id == owner_id or p.is_dead:
+			continue
+
+		var crouching := bool(p.get("is_crouching"))
+		var half_w := 15.0
+		var half_h := 16.5 if crouching else 32.0
+		var center := p.global_position + Vector2(0.0, -16.5 if crouching else -32.0)
+
+		var closest := Geometry2D.get_closest_point_to_segment(center, from, to)
+		var dx := maxf(absf(closest.x - center.x) - half_w, 0.0)
+		var dy := maxf(absf(closest.y - center.y) - half_h, 0.0)
+		if (dx * dx + dy * dy) > (PLAYER_HIT_PADDING * PLAYER_HIT_PADDING):
+			continue
+
+		var hit_dist := from.distance_to(closest)
+		if hit_dist < best_dist:
+			best_dist = hit_dist
+			var normal := (closest - center).normalized()
+			if normal == Vector2.ZERO:
+				normal = -direction.normalized()
+			best_hit = {
+				"collider": p,
+				"position": closest,
+				"normal": normal,
+			}
+	return best_hit
+
+
+func _pick_nearest_hit(from: Vector2, hit_a: Dictionary, hit_b: Dictionary) -> Dictionary:
+	if hit_a.is_empty():
+		return hit_b
+	if hit_b.is_empty():
+		return hit_a
+	var da := from.distance_to(hit_a.position)
+	var db := from.distance_to(hit_b.position)
+	return hit_a if da <= db else hit_b
 
 
 func _update_homing(delta: float) -> void:
@@ -154,6 +229,8 @@ func _find_homing_target() -> CharacterBody2D:
 
 func _apply_hit(body: Node2D, hit_position: Vector2, hit_normal: Vector2 = Vector2.ZERO) -> bool:
 	if _has_hit:
+		return false
+	if body is CharacterBody2D and body.player_id == owner_id:
 		return false
 	if explosive_radius > 0.0:
 		_explode(hit_position)

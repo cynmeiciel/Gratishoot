@@ -47,6 +47,15 @@ var game_mode: int = MODE_CLASSIC_DUEL
 var p2_is_ai: bool = false
 var online_server_address: String = "127.0.0.1"
 var online_server_port: int = 28991
+# When filter is disabled, all entries are allowed.
+var classic_use_weapon_filter: bool = false
+var classic_use_tactical_filter: bool = false
+var classic_enabled_weapons: PackedStringArray = PackedStringArray()
+var classic_enabled_tacticals: PackedStringArray = PackedStringArray()
+var classic_spawn_interval_min: float = 1.2
+var classic_spawn_interval_max: float = 2.4
+var classic_tactical_chance: float = 0.3
+var classic_max_pickups: int = 10
 
 
 func _ready() -> void:
@@ -79,6 +88,14 @@ func save_settings() -> void:
 	cfg.set_value("match", "game_mode", game_mode)
 	cfg.set_value("network", "server_address", online_server_address)
 	cfg.set_value("network", "server_port", online_server_port)
+	cfg.set_value("match", "classic_use_weapon_filter", classic_use_weapon_filter)
+	cfg.set_value("match", "classic_use_tactical_filter", classic_use_tactical_filter)
+	cfg.set_value("match", "classic_enabled_weapons", classic_enabled_weapons)
+	cfg.set_value("match", "classic_enabled_tacticals", classic_enabled_tacticals)
+	cfg.set_value("match", "classic_spawn_interval_min", classic_spawn_interval_min)
+	cfg.set_value("match", "classic_spawn_interval_max", classic_spawn_interval_max)
+	cfg.set_value("match", "classic_tactical_chance", classic_tactical_chance)
+	cfg.set_value("match", "classic_max_pickups", classic_max_pickups)
 	cfg.set_value("settings", "master_volume", master_volume)
 	cfg.set_value("settings", "window_mode", window_mode)
 	cfg.set_value("settings", "aim_assist_enabled", aim_assist_enabled)
@@ -94,6 +111,14 @@ func load_settings() -> void:
 
 	rounds_to_win = int(cfg.get_value("match", "rounds_to_win", rounds_to_win))
 	game_mode = int(cfg.get_value("match", "game_mode", game_mode))
+	classic_use_weapon_filter = bool(cfg.get_value("match", "classic_use_weapon_filter", classic_use_weapon_filter))
+	classic_use_tactical_filter = bool(cfg.get_value("match", "classic_use_tactical_filter", classic_use_tactical_filter))
+	classic_enabled_weapons = PackedStringArray(cfg.get_value("match", "classic_enabled_weapons", []))
+	classic_enabled_tacticals = PackedStringArray(cfg.get_value("match", "classic_enabled_tacticals", []))
+	classic_spawn_interval_min = float(cfg.get_value("match", "classic_spawn_interval_min", classic_spawn_interval_min))
+	classic_spawn_interval_max = float(cfg.get_value("match", "classic_spawn_interval_max", classic_spawn_interval_max))
+	classic_tactical_chance = float(cfg.get_value("match", "classic_tactical_chance", classic_tactical_chance))
+	classic_max_pickups = int(cfg.get_value("match", "classic_max_pickups", classic_max_pickups))
 	online_server_address = String(cfg.get_value("network", "server_address", online_server_address))
 	online_server_port = int(cfg.get_value("network", "server_port", online_server_port))
 	p1_character = int(cfg.get_value("players", "p1_character", p1_character))
@@ -115,6 +140,12 @@ func load_settings() -> void:
 	rounds_to_win = maxi(1, mini(9, rounds_to_win))
 	game_mode = maxi(MODE_CLASSIC_DUEL, mini(MODE_ONLINE_CLIENT, game_mode))
 	online_server_port = clampi(online_server_port, 1024, 65535)
+	classic_spawn_interval_min = clampf(classic_spawn_interval_min, 0.2, 30.0)
+	classic_spawn_interval_max = clampf(classic_spawn_interval_max, 0.2, 30.0)
+	if classic_spawn_interval_max < classic_spawn_interval_min:
+		classic_spawn_interval_max = classic_spawn_interval_min
+	classic_tactical_chance = clampf(classic_tactical_chance, 0.0, 1.0)
+	classic_max_pickups = clampi(classic_max_pickups, 1, 64)
 	p1_character = maxi(0, mini(3, p1_character))
 	p2_character = maxi(0, mini(3, p2_character))
 	if p1_name == "":
@@ -122,6 +153,37 @@ func load_settings() -> void:
 	if p2_name == "":
 		p2_name = "Player 2"
 	window_mode = maxi(WINDOW_WINDOWED, mini(WINDOW_FULLSCREEN, window_mode))
+
+
+func set_classic_pool_filters(
+	weapons: PackedStringArray,
+	tacticals: PackedStringArray,
+	use_weapon_filter: bool,
+	use_tactical_filter: bool
+) -> void:
+	classic_use_weapon_filter = use_weapon_filter
+	classic_use_tactical_filter = use_tactical_filter
+	classic_enabled_weapons = weapons.duplicate()
+	classic_enabled_tacticals = tacticals.duplicate()
+
+
+func set_classic_spawn_settings(interval_min: float, interval_max: float, tactical_chance: float, max_pickups: int) -> void:
+	classic_spawn_interval_min = clampf(interval_min, 0.2, 30.0)
+	classic_spawn_interval_max = clampf(interval_max, classic_spawn_interval_min, 30.0)
+	classic_tactical_chance = clampf(tactical_chance, 0.0, 1.0)
+	classic_max_pickups = clampi(max_pickups, 1, 64)
+
+
+func is_classic_weapon_allowed(weapon_name: String) -> bool:
+	if not classic_use_weapon_filter:
+		return true
+	return classic_enabled_weapons.has(weapon_name)
+
+
+func is_classic_tactical_allowed(tactical_name: String) -> bool:
+	if not classic_use_tactical_filter:
+		return true
+	return classic_enabled_tacticals.has(tactical_name)
 
 
 func apply_key_bindings() -> void:

@@ -375,32 +375,32 @@ static func _build_pool() -> void:
 		"mode": WeaponData.FireMode.AUTO,  "equip": 0.74 })
 	_add_gun({ "name": "Negev",       "rarity": WeaponData.Rarity.UNCOMMON,  "cat": WeaponData.GunCategory.LMG,
 		"dmg": 15,  "rate": 14.5, "kb": 165, "vel": 2850,
-		"rec": 66,  "kick": 0.07,  "reload": 3.9,  "cap": 100, "reserve": 200, "speed": 0.66,
+		"rec": 56,  "kick": 0.07,  "reload": 3.9,  "cap": 100, "reserve": 200, "speed": 0.66,
 		"spread": 15.2,
 		"sfx": "gun_negev",
 		"mode": WeaponData.FireMode.AUTO,  "equip": 0.74 })
 	_add_gun({ "name": "RPK",         "rarity": WeaponData.Rarity.RARE,      "cat": WeaponData.GunCategory.LMG,
 		"dmg": 19,  "rate": 10.2, "kb": 225, "vel": 2960,
-		"rec": 72,  "kick": 0.082, "reload": 3.5,  "cap": 75,  "reserve": 150, "speed": 0.7,
+		"rec": 52,  "kick": 0.082, "reload": 3.5,  "cap": 75,  "reserve": 150, "speed": 0.7,
 		"spread": 13.9,
 		"sfx": "gun_rpk",
 		"mode": WeaponData.FireMode.AUTO,  "equip": 0.72 })
 	_add_gun({ "name": "MG3",         "rarity": WeaponData.Rarity.UNCOMMON,  "cat": WeaponData.GunCategory.LMG,
 		"dmg": 14,  "rate": 17.0, "kb": 165, "vel": 2900,
-		"rec": 70,  "kick": 0.078, "reload": 3.7,  "cap": 75,  "reserve": 150, "speed": 0.66,
-		"spread": 15.5,
+		"rec": 50,  "kick": 0.078, "reload": 3.7,  "cap": 75,  "reserve": 150, "speed": 0.66,
+		"spread": 12.5,
 		"sfx": "gun_mg3",
 		"mode": WeaponData.FireMode.AUTO,  "equip": 0.74 })
 	_add_gun({ "name": "M60E4",       "rarity": WeaponData.Rarity.LEGENDARY, "cat": WeaponData.GunCategory.LMG,
 		"dmg": 19,  "rate": 10.8, "kb": 220, "vel": 3050,
-		"rec": 74,  "kick": 0.082, "reload": 4.0,  "cap": 100, "reserve": 200, "speed": 0.66,
-		"spread": 14.1,
+		"rec": 44,  "kick": 0.082, "reload": 4.0,  "cap": 100, "reserve": 200, "speed": 0.66,
+		"spread": 12.1,
 		"sfx": "gun_m60e4",
 		"mode": WeaponData.FireMode.AUTO,  "equip": 0.78 })
 	_add_gun({ "name": "M134 Minigun", "rarity": WeaponData.Rarity.MYTHIC, "cat": WeaponData.GunCategory.LMG,
 		"dmg": 15,  "rate": 28.0, "kb": 145, "vel": 2100,
-		"rec": 64,  "kick": 0.045, "reload": 4.5,  "cap": 200, "reserve": 400, "speed": 0.55,
-		"spread": 16.2,
+		"rec": 44,  "kick": 0.045, "reload": 4.5,  "cap": 200, "reserve": 400, "speed": 0.55,
+		"spread": 11.2,
 		"sfx": "gun_m134_minigun",
 		"mode": WeaponData.FireMode.AUTO,  "equip": 1.20 })
 
@@ -629,7 +629,7 @@ static func _build_pool() -> void:
 		"exp_radius": 190.0, "grav": 1980.0, "up_boost": -220.0 })
 	# RPG-7 flies in a mostly normal trajectory (minimal drop) and explodes on impact.
 	_add_gun({ "name": "RPG-7", "rarity": WeaponData.Rarity.MYTHIC, "cat": WeaponData.GunCategory.LAUNCHER,
-		"dmg": 135, "rate": 0.72, "kb": 760, "vel": 1500,
+		"dmg": 135, "rate": 0.72, "kb": 760, "vel": 2800,
 		"rec": 565, "kick": 2.0, "reload": 4.1, "cap": 1, "reserve": 4, "speed": 0.5,
 		"spread": 0.22, "sfx": "gun_rpg_7",
 		"mode": WeaponData.FireMode.SINGLE, "equip": 0.62,
